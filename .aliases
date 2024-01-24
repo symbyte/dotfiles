@@ -33,6 +33,7 @@ fi
 
 # from https://www.anand-iyer.com/blog/2018/a-simpler-way-to-manage-your-dotfiles/
 alias dotfiles='/usr/local/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias df="dotfiles"
 
 alias "http_client_cache_clean"="rm -rf ~/Library/Caches/Coursier/v1/https/nexus.cloud.aws.tenablesecurity.com/content/repositories/tenable-cloud/com/tenable/was/library/was-api-client_2.13/"
 
