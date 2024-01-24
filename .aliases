@@ -1,0 +1,48 @@
+# General
+alias "emacs"='emacsclient -nw -a ""'
+alias "vim"="nvim"
+
+mkcd() {
+	mkdir $1 && cd $1
+}
+
+# Git
+alias "glog"="git lg3"
+alias "gs"="git status"
+alias "gc"="git commit"
+alias "gf"="git fetch --prune"
+alias "gfm"="git fetch origin master --prune"
+alias "gpl"="git pull --rebase"
+alias "gp"="git push"
+alias "gpu"="git push -u origin HEAD"
+alias "gam"="git commit --amend --no-edit"
+alias "gama"="git commit -a --amend --no-edit"
+alias "gch"="git checkout"
+alias "gr"="git rebase"
+alias "grm"="git rebase origin/master"
+alias "gd"="git diff"
+alias "gdc"="git diff --cached"
+alias "gpf"="git push --force-with-lease"
+alias "grc"="git rebase --continue"
+alias "gcb"="git branch --merged | egrep -v \"(^\*|master|develop|test)\" | xargs git branch -d"
+alias "lg"="lazygit"
+
+# from https://www.anand-iyer.com/blog/2018/a-simpler-way-to-manage-your-dotfiles/
+alias dotfiles='/usr/local/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+
+alias "http_client_cache_clean"="rm -rf ~/Library/Caches/Coursier/v1/https/nexus.cloud.aws.tenablesecurity.com/content/repositories/tenable-cloud/com/tenable/was/library/was-api-client_2.13/"
+
+wip() {
+	git commit -a -m "WIP: $1"
+}
+
+# Tmux
+alias "tks"="tmux kill-session"
+alias "tl"="tmuxp load "
+alias "ta"="tmux a"
+
+# Chrome
+
+# alias "chromed"="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=/tmp/chrome-debug --remote-debugging-port=9222 http://localhost:3333"
+
+alias "db_wapi_qa_dev"="pgcli -h qa-develop-migrated-cluster.cluster-cihjrctp40ra.us-east-1.rds.amazonaws.com -p 8432 qa_develop_service_was_api qa_develop_was_api_user"
