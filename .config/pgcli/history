@@ -1,0 +1,174 @@
+
+# 2021-04-22 10:09:10.834992
++select * from was_api.scans where scan_id='953c3e72-9896-4160-b5bd-ee6b23921bdf'
+
+# 2021-04-22 10:09:39.512361
++exit
+
+# 2021-04-22 10:19:01.614168
++select * from was_api.scans where scan_id='953c3e72-9896-4160-b5bd-ee6b23921bdf'
+
+# 2021-04-22 10:19:41.486580
++select jsonb_pretty(metadata) from was_api.scans where scan_id='953c3e72-9896-4160-b5bd-ee6b23921bdf'
+
+# 2021-04-22 10:19:55.209303
++select metadata from was_api.scans where scan_id='953c3e72-9896-4160-b5bd-ee6b23921bdf'
+
+# 2021-04-22 10:22:26.104909
++select * from was_api.scans where scan_id='953c3e72-9896-4160-b5bd-ee6b23921bdf'
+
+# 2021-04-22 10:23:26.361431
++select * from was_api.scans where metadata is not null limit 1;
+
+# 2021-04-22 10:23:45.554412
++select jsonb_pretty(metadata) from was_api.scans where metadata is not null limit 1;
+
+# 2021-04-22 10:30:37.767819
++select jsonb_pretty(metadata) from was_api.scans where scan_id = 'bc1f125f-4179-4b5c-91d2-3f286a0b6cc2';
+
+# 2021-04-22 10:33:59.316276
++select jsonb_pretty(scanner) from was_api.scans_status where scan_id = 'bc1f125f-4179-4b5c-91d2-3f286a0b6cc2';
+
+# 2021-04-22 10:37:57.980420
++\exit
+
+# 2021-04-22 10:38:01.092497
++\q
+
+# 2021-05-06 14:02:37.927512
++select * from was_api.configs where config_id = '0b30966b-48dc-45ac-b4ee-8ab217ae3f2d'
+
+# 2021-05-06 14:02:56.705790
++select jsonb_pretty(settings) from was_api.configs where config_id = '0b30966b-48dc-45ac-b4ee-8ab217ae3f2d'
+
+# 2021-05-06 14:10:53.597769
++\q
+
+# 2022-03-09 10:22:51.365805
++select * from wsm.scans
+
+# 2022-03-09 10:23:42.310729
++select * from wsm.scanners
+
+# 2022-03-09 10:23:52.817865
++select * from wsm.scanner_scan_map
+
+# 2022-03-09 10:23:59.539457
++select * from wsm.scans
+
+# 2022-03-09 10:27:05.088202
++update wsm.scans SET scanner = to_jsonb(scanner) FROM (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 10:27:11.746364
++select * from wsm.scans
+
+# 2022-03-09 10:29:12.466484
++with scanner as (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') update wsm.scans set scanner = to_jsonb(scanner) where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 10:29:14.697406
++select * from wsm.scans
+
+# 2022-03-09 10:29:28.909008
++select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a'
+
+# 2022-03-09 10:29:43.385961
++select to_json(*) from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a'
+
+# 2022-03-09 10:30:15.155810
++select to_json(scanner) from (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner
+
+# 2022-03-09 11:19:40.794100
++update wsm.scans SET scanner = to_jsonb(scanner) FROM (select 'thing' from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 11:19:45.850260
++select * from wsm.scans
+
+# 2022-03-09 11:20:32.391135
++update wsm.scans SET scanner = '{}'::jsonb;
+
+# 2022-03-09 11:20:35.103254
++select * from wsm.scans
+
+# 2022-03-09 11:20:40.904603
++update wsm.scans SET scanner = null;
+
+# 2022-03-09 11:20:43.424029
++select * from wsm.scans
+
+# 2022-03-09 11:38:15.856574
++update wsm.scans SET scanner = to_jsonb(scanner) FROM (select 'thing' from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 11:38:18.473851
++select * from wsm.scans
+
+# 2022-03-09 11:39:18.370667
++select scanner FROM (select 'thing' from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner;
+
+# 2022-03-09 11:39:40.850839
++select to_json(scanner) FROM (select 'thing' from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner;
+
+# 2022-03-09 11:39:52.235855
++select to_json(scanner) FROM (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner;
+
+# 2022-03-09 12:05:52.680909
++update wsm.scans SET scanner = to_jsonb(scanner) FROM (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:05:58.378786
++select * from wsm.scans
+
+# 2022-03-09 12:06:37.816176
++update wsm.scans SET scanner = row_to_jsonb(scanner) FROM (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') as scanner where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:07:37.891117
++update wsm.scans SET scanner = row_to_jsonb(scanner) FROM (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') scanner where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:07:47.323632
++update wsm.scans SET scanner = to_jsonb(scanner) FROM (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') scanner where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:07:50.866705
++select * from wsm.scans
+
+# 2022-03-09 12:09:11.442568
++update wsm.scans set current_scanner_id = null;
+
+# 2022-03-09 12:09:15.420248
++select * from wsm.scans
+
+# 2022-03-09 12:09:48.669015
++update wsm.scans SET current_scanner_id = scanner.scanner_id FROM (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') scanner where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:09:51.674117
++select * from wsm.scans
+
+# 2022-03-09 12:11:05.850567
++update wsm.scans SET scanner = scanner_json FROM (SELECT to_json(scanner) from  (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') scanner) scanner_json where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:12:04.636213
++update wsm.scans SET scanner = scanner_json.s_json FROM (SELECT to_json(scanner) as s_json from  (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') scanner) scanner_json where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:12:07.062915
++select * from wsm.scans
+
+# 2022-03-09 12:13:03.322225
++update wsm.scans SET scanner = scanner_json.val FROM (SELECT to_json(scanner) as val from  (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') scanner) scanner_json where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:13:06.193686
++select * from wsm.scans
+
+# 2022-03-09 12:13:19.092386
++update wsm.scans set scanner = null;
+
+# 2022-03-09 12:13:21.699696
++select * from wsm.scans
+
+# 2022-03-09 12:13:26.278420
++update wsm.scans SET scanner = scanner_json.val FROM (SELECT to_json(scanner) as val from  (select * from wsm.scanners where scanner_id = '7f849925-c871-4faa-bee9-892fc6c06d6a') scanner) scanner_json where scan_id = 'da39df9a-e9fa-4489-8a43-b1e373a55b78';
+
+# 2022-03-09 12:13:29.004660
++select * from wsm.scans
+
+# 2022-03-09 13:07:21.884042
++select * from wsm.scanners
+
+# 2022-03-09 13:23:55.834605
++exit
