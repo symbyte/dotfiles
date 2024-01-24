@@ -27,6 +27,10 @@ alias "grc"="git rebase --continue"
 alias "gcb"="git branch --merged | egrep -v \"(^\*|master|develop|test)\" | xargs git branch -d"
 alias "lg"="lazygit"
 
+if [ -n "$NVIM_LISTEN_ADDRESS" ]; then
+    alias nvim=nvr -cc split --remote-wait +'set bufhidden=wipe'
+fi
+
 # from https://www.anand-iyer.com/blog/2018/a-simpler-way-to-manage-your-dotfiles/
 alias dotfiles='/usr/local/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 
