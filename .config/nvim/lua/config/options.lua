@@ -5,3 +5,4 @@ local opt = vim.opt
 local g = vim.g
 
 g.autoformat = false
+opt.conceallevel = 1
