@@ -6,3 +6,4 @@ local g = vim.g
 
 g.autoformat = false
 opt.conceallevel = 1
+g.root_spec = { ">projects", {".git", "lua"} }
