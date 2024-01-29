@@ -28,5 +28,5 @@
 	minRacyThreshold = 0 nanoseconds
 [pull]
 	rebase = true
-[blah]
-	bleh = true
+[merge]
+  tool = nvimdiff
