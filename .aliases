@@ -26,6 +26,7 @@ alias "gpf"="git push --force-with-lease"
 alias "grc"="git rebase --continue"
 alias "gcb"="git branch --merged | egrep -v \"(^\*|master|develop|test)\" | xargs git branch -d"
 alias "lg"="lazygit"
+alias "dfl"="lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
 
 if [ -n "$NVIM_LISTEN_ADDRESS" ]; then
     alias nvim=nvr -cc split --remote-wait +'set bufhidden=wipe'
@@ -51,3 +52,4 @@ alias "ta"="tmux a"
 # alias "chromed"="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=/tmp/chrome-debug --remote-debugging-port=9222 http://localhost:3333"
 
 alias "db_wapi_qa_dev"="pgcli -h qa-develop-migrated-cluster.cluster-cihjrctp40ra.us-east-1.rds.amazonaws.com -p 8432 qa_develop_service_was_api qa_develop_was_api_user"
+alias "container_to_clipboard"="echo f02b6697-96b8-4b14-8d91-77105e2f7f6a | pbcopy"
