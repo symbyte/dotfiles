@@ -32,6 +32,12 @@ return {
         -- layout_config = { mirror=true }, -- mirror preview pane
       },
     }
+    opts.pickers = {
+      find_files = {
+        follow = true,
+        hidden = true
+      },
+    }
   end,
   keys = {
     {
