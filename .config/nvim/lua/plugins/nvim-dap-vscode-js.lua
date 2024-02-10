@@ -7,14 +7,18 @@ return {
       require("dap-vscode-js").setup({
         debugger_path = "/Users/schambers/foss/vscode-js-debug", -- Path to vscode-js-debug installation.
         adapters = { "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" }, -- which adapters to register in nvim-dap
+        -- debugger_path = vim.fn.stdpath("data") .. "/mason/packages/js-debug-adapter", -- Path to vscode-js-debug installation.
+        -- debugger_cmd = { "js-debug-adapter"},
+        -- adapters = { "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" }, -- which adapters to register in nvim-dap
       })
+
       for _, language in ipairs({ "typescript", "typescriptreact", "javascript", "javascriptreact" }) do
         require("dap").configurations[language] = {
           {
             type = "pwa-chrome",
             request = "attach",
             name = "Attach to Chrome",
-            urlFilter = "localhost:3333/*",
+            urlFilter = "localhost*",
             sourceMaps = true,
             enableContentValidation = false,
             skipFiles = {
