@@ -32,6 +32,11 @@ if [ -n "$NVIM_LISTEN_ADDRESS" ]; then
     alias nvim=nvr -cc split --remote-wait +'set bufhidden=wipe'
 fi
 
+findandkill() {
+  port=$(lsof -n -i4TCP:$1 | grep LISTEN | awk '{ print $2 }')
+  kill -9 $port
+}
+alias killport=findandkill
 # from https://www.anand-iyer.com/blog/2018/a-simpler-way-to-manage-your-dotfiles/
 alias dotfiles='/usr/local/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 alias df="dotfiles"
