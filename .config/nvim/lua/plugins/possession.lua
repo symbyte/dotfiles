@@ -2,6 +2,20 @@ return {
   "jedrzejboczar/possession.nvim",
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
+    local function branch_name()
+      local branch = vim.fn.system("git branch --show-current 2> /dev/null | tr -d '\n'")
+
+      if branch ~= "" then
+        return branch
+      else
+        return ""
+      end
+    end
+
+    local function checkout_branch(branch)
+      vim.fn.system(string.format("git checkout %s", branch))
+    end
+
     local p = require("plenary")
     require("telescope").load_extension("possession")
     require("possession").setup({
@@ -10,7 +24,7 @@ return {
       load_silent = true,
       debug = false,
       logfile = false,
-      prompt_no_cr = false,
+      prompt_no_cr = true,
       autosave = {
         current = true, -- or fun(name): boolean
         tmp = true, -- or fun(): boolean
@@ -30,13 +44,19 @@ return {
       },
       hooks = {
         before_save = function(name)
-          return {}
+          return {
+            git_branch = branch_name(),
+          }
         end,
         after_save = function(name, user_data, aborted) end,
         before_load = function(name, user_data)
           return user_data
         end,
-        after_load = function(name, user_data) end,
+        after_load = function(name, user_data)
+          if user_data.git_branch then
+            checkout_branch(user_data.git_branch)
+          end
+        end,
       },
       plugins = {
         close_windows = {
@@ -49,12 +69,7 @@ return {
             custom = false, -- or fun(win): boolean
           },
         },
-        delete_hidden_buffers = {
-          hooks = {
-            "before_load",
-          },
-          force = false, -- or fun(buf): boolean
-        },
+        delete_hidden_buffers = false,
         nvim_tree = true,
         neo_tree = true,
         symbols_outline = true,
@@ -88,6 +103,6 @@ return {
     })
   end,
   keys = {
-    {"<leader>fs", "<cmd>Telescope possession list<cr>" ,desc = "list sessions"}
-  }
+    { "<leader>fs", "<cmd>Telescope possession list<cr>", desc = "list sessions" },
+  },
 }
