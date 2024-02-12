@@ -34,8 +34,7 @@ return {
     }
     opts.pickers = {
       find_files = {
-        follow = true,
-        hidden = true
+        follow = true
       },
     }
   end,
