@@ -16,10 +16,11 @@ return {
       vim.fn.system(string.format("git checkout %s", branch))
     end
 
-    local p = require("plenary")
+    local Path = require("plenary.path")
+
     require("telescope").load_extension("possession")
     require("possession").setup({
-      session_dir = (p.Path:new(vim.fn.stdpath("data")) / "possession"):absolute(),
+      session_dir = (Path:new(vim.fn.stdpath("data")) / "possession"):absolute(),
       silent = false,
       load_silent = true,
       debug = false,
