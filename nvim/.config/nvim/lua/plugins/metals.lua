@@ -1,5 +1,6 @@
 return {
   "scalameta/nvim-metals",
+  event = "VeryLazy",
   dependencies = {
     "nvim-lua/plenary.nvim",
     {
