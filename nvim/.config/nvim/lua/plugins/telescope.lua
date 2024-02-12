@@ -44,5 +44,10 @@ return {
       "<cmd>lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>",
       desc = "grep files (root dir)",
     },
+    {
+      "<leader>sc",
+      "<cmd>Telescope commands<CR>",
+      desc = "Commands",
+    },
   },
 }
