@@ -16,7 +16,7 @@ return {
   },
   { "nvim-tree/nvim-web-devicons" },
   {
-    "fokle/which-key.nvim",
+    "folke/which-key.nvim",
     opts = {
       defaults = {
         ["<leader>o"] = { name = "+Github" },
