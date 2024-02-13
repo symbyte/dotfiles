@@ -14,6 +14,7 @@ return {
       { "<leader>oa", "<cmd>Octo actions<cr>", desc = "actions" },
     },
   },
+  { "nvim-tree/nvim-web-devicons" },
   {
     "fokle/which-key.nvim",
     opts = {
