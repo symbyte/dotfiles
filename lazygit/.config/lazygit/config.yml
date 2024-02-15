@@ -1,1 +1,2 @@
-services: 
+git:
+    mainBranches: [master, main, dev]
