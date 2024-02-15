@@ -5,4 +5,10 @@ local opt = vim.opt
 local g = vim.g
 
 opt.conceallevel = 1
-g.root_spec = { "lsp", "client", ">projects", {".git", "lua"} }
+g.root_spec = { "lsp", "client", ">projects", { ".git", "lua" } }
+
+vim.filetype.add({
+  extension = {
+    mdx = { "mdx", "markdown.mdx" },
+  },
+})
