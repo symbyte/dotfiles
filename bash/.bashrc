@@ -8,7 +8,7 @@ fi
 
 eval "$(starship init bash)"
 
-eval "$(zoxide init bash)"
+eval "$(zoxide init --cmd=cd bash)"
 
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 
