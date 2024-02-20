@@ -21,6 +21,7 @@
     forget="!git fetch -p && git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D"
     forgetlist="!git fetch -p && git branch -vv | awk '/: gone]/{print $1}'"
     ignore="update-index --assume-unchanged"
+    ignored=! git ls-files -v | grep '^h'
     unignore="update-index --no-assume-unchanged"
     smudge = git-lfs smudge -- %f
     required = true
