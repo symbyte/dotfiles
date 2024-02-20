@@ -20,10 +20,12 @@
     lg3-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset)%n''          %C(dim white)- %an <%ae> %C(reset) %C(dim white)(committer: %cn <%ce>)%C(reset)'
     forget="!git fetch -p && git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D"
     forgetlist="!git fetch -p && git branch -vv | awk '/: gone]/{print $1}'"
-	smudge = git-lfs smudge -- %f
-	required = true
-	clean = git-lfs clean -- %f
-	process = git-lfs filter-process
+    ignore="update-index --assume-unchanged"
+    unignore="update-index --no-assume-unchanged"
+    smudge = git-lfs smudge -- %f
+    required = true
+    clean = git-lfs clean -- %f
+    process = git-lfs filter-process
 [filesystem "AdoptOpenJDK|1.8.0_242|/dev/disk1s1"]
 	timestampResolution = 1001 milliseconds
 	minRacyThreshold = 0 nanoseconds
