@@ -9,6 +9,6 @@ g.root_spec = { "lsp", "client", ">projects", { ".git", "lua" } }
 
 vim.filetype.add({
   extension = {
-    mdx = { "mdx", "markdown.mdx" },
+    ["mdx"] = "mdx",
   },
 })
