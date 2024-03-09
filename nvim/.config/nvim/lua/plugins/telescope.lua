@@ -72,5 +72,9 @@ return {
       "<cmd>Telescope commands<CR>",
       desc = "Commands",
     },
+    {
+      "<leader>sg",
+      false,
+    },
   },
 }
