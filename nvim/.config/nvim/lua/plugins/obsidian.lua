@@ -1,3 +1,7 @@
+if true then
+  return {}
+end
+
 return {
   "epwalsh/obsidian.nvim",
   version = "*", -- recommended, use latest release instead of latest commit
@@ -17,16 +21,17 @@ return {
     -- see below for full list of optional dependencies 👇
   },
   opts = {
-    workspaces = {
-      {
-        name = "Tenable",
-        path = "~/Documents/notes/Tenable",
-      },
-      {
-        name = "Engineering",
-        path = "~/Documents/notes/Engineering",
-      },
-    },
+    -- TODO update paths
+    -- workspaces = {
+    --   {
+    --     name = "Tenable",
+    --     path = "~/Documents/notes/Tenable",
+    --   },
+    --   {
+    --     name = "Engineering",
+    --     path = "~/Documents/notes/Engineering",
+    --   },
+    -- },
 
     -- see below for full list of options 👇
   },
