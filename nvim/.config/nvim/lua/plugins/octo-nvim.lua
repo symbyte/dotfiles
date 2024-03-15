@@ -16,7 +16,17 @@ return {
     end,
     keys = {
       { "<leader>oa", "<cmd>Octo actions<cr>", desc = "actions" },
-      { "<leader>or", "<cmd>Octo search is:pr is:open commenter:@me -author:@me<cr>", desc = "open PRs I'm reviewing" },
+      {
+        "<leader>oo",
+        "<cmd>Octo search assignee:@me is:open -commenter:@me<cr>",
+        desc = "open my [o]pen assignments",
+      },
+      {
+        "<leader>or",
+        "<cmd>Octo search is:pr is:open commenter:@me -author:@me<cr>",
+        desc = "open PRs I'm [r]eviewing",
+      },
+      { "<leader>om", "<cmd>Octo search is:pr is:open author:@me<cr>", desc = "open [m]y PRs" },
       { "<leader>sg", "<cmd>Octo search<cr>", desc = "search github" },
     },
   },
