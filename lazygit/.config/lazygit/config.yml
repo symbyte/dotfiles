@@ -1,2 +1,4 @@
+gui:
+    nerdFontsVersion: '3'
 git:
     mainBranches: [master, main, dev]
