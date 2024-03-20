@@ -2,6 +2,7 @@ return {
   {
     "jedrzejboczar/possession.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
+    lazy = false,
     config = function()
       local function branch_name()
         local branch = vim.fn.system("git branch --show-current 2> /dev/null | tr -d '\n'")
