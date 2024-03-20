@@ -1,4 +1,7 @@
 return {
+  dependencies = {
+    "nvim-neotest/nvim-nio",
+  },
   "mfussenegger/nvim-dap",
   keys = {
     {
@@ -18,7 +21,7 @@ return {
     {
       "<leader>dr",
       function()
-        require("dap").restart({ terminateDebugee = false})
+        require("dap").restart({ terminateDebugee = false })
       end,
       desc = "Reload Session",
     },
