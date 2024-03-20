@@ -154,6 +154,7 @@ return {
       },
       { "<leader>om", "<cmd>Octo search is:pr is:open author:@me<cr>", desc = "open [m]y PRs" },
       { "<leader>sg", "<cmd>Octo search<cr>", desc = "search github" },
+      { "<leader>oh", "<cmd>Octo pr checks<cr>", desc = "Show PR c[h]ecks" },
     },
   },
   {
