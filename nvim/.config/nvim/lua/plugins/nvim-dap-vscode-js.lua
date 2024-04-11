@@ -31,6 +31,21 @@ return {
           },
           {
             type = "pwa-chrome",
+            request = "attach",
+            name = "Attach to Chrome (cypress)",
+            urlFilter = "localhost*",
+            sourceMaps = true,
+            enableContentValidation = false,
+            skipFiles = {
+              "<node_internals>/**",
+              "chrome-extension://**",
+              "${workspaceFolder}/node_modules/**/*.js",
+            },
+            port = 9223,
+            webRoot = "${workspaceFolder}",
+          },
+          {
+            type = "pwa-chrome",
             name = "Launch Chrome",
             request = "launch",
             webRoot = "${workspaceFolder}",
