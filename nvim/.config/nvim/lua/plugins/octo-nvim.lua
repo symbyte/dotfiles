@@ -143,14 +143,19 @@ return {
     keys = {
       { "<leader>oa", "<cmd>Octo actions<cr>", desc = "actions" },
       {
-        "<leader>oo",
+        "<leader>oc",
         "<cmd>Octo search assignee:@me is:open -commenter:@me<cr>",
-        desc = "open my [o]pen assignments",
+        desc = "open my PR requsts I've [c]ommited to reviewing",
       },
       {
         "<leader>or",
+        "<cmd>Octo search user-review-requested:@me -team-review-requested:Product/was-app-maintainer -team-review-requested:Product/wasappteam -team-review-requested:Product/explore-management is:open -commenter:@me -author:build-svc archived:false -assignee:@me<cr>",
+        desc = "open my review [r]equests",
+      },
+      {
+        "<leader>ow",
         "<cmd>Octo search is:pr is:open commenter:@me -author:@me<cr>",
-        desc = "open PRs I'm [r]eviewing",
+        desc = "open PRs I'm [w]orking",
       },
       { "<leader>om", "<cmd>Octo search is:pr is:open author:@me<cr>", desc = "open [m]y PRs" },
       { "<leader>sg", "<cmd>Octo search<cr>", desc = "search github" },
