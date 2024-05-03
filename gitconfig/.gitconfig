@@ -32,5 +32,14 @@
 	minRacyThreshold = 0 nanoseconds
 [pull]
 	rebase = true
+
 [merge]
   tool = nvimdiff
+  conflictstyle = zdiff3
+
+[mergetool]
+	keepBackup = false
+	prompt = false
+
+[mergetool "nvimdiff"]
+  layout = "REMOTE,BASE,LOCAL / MERGED"
