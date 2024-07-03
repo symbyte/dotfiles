@@ -9,6 +9,12 @@
 [core]
 	autocrlf = input
 	excludesfile = ~/.gitignore
+    pager = delta
+[interactive]
+    diffFilter = delta --color-only
+[delta]
+    navigate = true
+    line-numbers = true
 [alias]
     lg = !git lg1
     lg1 = !git lg1-specific --all
