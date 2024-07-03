@@ -38,7 +38,8 @@
 	minRacyThreshold = 0 nanoseconds
 [pull]
 	rebase = true
-
+[diff]
+    colorMoved = default
 [merge]
   tool = nvimdiff
   conflictstyle = zdiff3
@@ -48,4 +49,4 @@
 	prompt = false
 
 [mergetool "nvimdiff"]
-  layout = "REMOTE,BASE,LOCAL / MERGED"
+  layout = "LOCAL,BASE,REMOTE/ MERGED"
