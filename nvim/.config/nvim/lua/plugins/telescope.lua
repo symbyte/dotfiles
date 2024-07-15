@@ -53,7 +53,7 @@ return {
       },
     }
 
-    opts.defaults = {
+    opts.spec = {
       mappings = {
         i = {
           ["<CR>"] = select_one_or_multi,
