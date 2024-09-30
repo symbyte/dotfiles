@@ -1,117 +1,66 @@
 return {
   {
-    "jedrzejboczar/possession.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
+    "gennaro-tedesco/nvim-possession",
+    dependencies = {
+      "ibhagwan/fzf-lua",
+    },
     lazy = false,
+    build = function()
+      local sessions_path = vim.fn.stdpath("data") .. "/sessions"
+      if vim.fn.isdirectory(sessions_path) == 0 then
+        vim.uv.fs_mkdir(sessions_path, 511) -- 0777
+      end
+    end,
     config = function()
-      local function branch_name()
-        local branch = vim.fn.system("git branch --show-current 2> /dev/null | tr -d '\n'")
-
-        if branch ~= "" then
-          return branch
-        else
-          return ""
-        end
-      end
-
-      local function checkout_branch(branch)
-        vim.fn.system(string.format("git checkout %s", branch))
-      end
-
       local Path = require("plenary.path")
+      require("nvim-possession").setup({
+        sessions = {
+          -- sessions_path = (Path:new(vim.fn.stdpath("data")) / "possession"):absolute(), -- folder to look for sessions, must be a valid existing path
+          -- sessions_variable = ... -- defines vim.g[sessions_variable] when a session is loaded
+          -- sessions_icon = ...-- string: shows icon both in the prompt and in the statusline
+          -- sessions_prompt = ... -- fzf prompt string
+        },
 
-      require("telescope").load_extension("possession")
-      require("possession").setup({
-        session_dir = (Path:new(vim.fn.stdpath("data")) / "possession"):absolute(),
-        silent = false,
-        load_silent = true,
-        debug = false,
-        logfile = false,
-        prompt_no_cr = true,
-        autosave = {
-          current = true, -- or fun(name): boolean
-          tmp = true, -- or fun(): boolean
-          tmp_name = "tmp", -- or fun(): string
-          on_load = true,
-          on_quit = true,
+        autoload = false, -- whether to autoload sessions in the cwd at startup
+        autosave = true, -- whether to autosave loaded sessions before quitting
+        autoswitch = {
+          enable = true, -- whether to enable autoswitch
+          exclude_ft = {}, -- list of filetypes to exclude from autoswitch
         },
-        commands = {
-          save = "SSave",
-          load = "SLoad",
-          rename = "SRename",
-          close = "SClose",
-          delete = "SDelete",
-          show = "SShow",
-          list = "SList",
-          migrate = "SMigrate",
-        },
-        hooks = {
-          before_save = function(name)
-            return {
-              git_branch = branch_name(),
-            }
-          end,
-          after_save = function(name, user_data, aborted) end,
-          before_load = function(name, user_data)
-            return user_data
-          end,
-          after_load = function(name, user_data)
-            if user_data.git_branch then
-              checkout_branch(user_data.git_branch)
-            end
-          end,
-        },
-        plugins = {
-          close_windows = {
-            hooks = { "before_save", "before_load" },
-            preserve_layout = true, -- or fun(win): boolean
-            match = {
-              floating = true,
-              buftype = {},
-              filetype = {},
-              custom = false, -- or fun(win): boolean
-            },
-          },
-          delete_hidden_buffers = false,
-          nvim_tree = true,
-          neo_tree = true,
-          symbols_outline = true,
-          tabby = true,
-          dap = true,
-          dapui = true,
-          neotest = true,
-          delete_buffers = true,
-        },
-        telescope = {
-          previewer = {
-            enabled = true,
-            previewer = "pretty", -- or 'raw' or fun(opts): Previewer
-            wrap_lines = true,
-            include_empty_plugin_data = false,
-            cwd_colors = {
-              cwd = "Comment",
-              tab_cwd = { "#cc241d", "#b16286", "#d79921", "#689d6a", "#d65d0e", "#458588" },
-            },
-          },
-          list = {
-            default_action = "load",
-            mappings = {
-              save = { n = "<c-x>", i = "<c-x>" },
-              load = { n = "<c-v>", i = "<c-v>" },
-              delete = { n = "<c-t>", i = "<c-t>" },
-              rename = { n = "<c-r>", i = "<c-r>" },
-            },
+
+        save_hook = nil, -- callback, function to execute before saving a session
+        -- useful to update or cleanup global variables for example
+        post_hook = nil, -- callback, function to execute after loading a session
+        -- useful to restore file trees, file managers or terminals
+        -- function()
+        --     require('FTerm').open()
+        --     require('nvim-tree').toggle(false, true)
+        -- end
+
+        fzf_winopts = {
+          -- any valid fzf-lua winopts options, for instance
+          width = 0.5,
+          preview = {
+            vertical = "right:30%",
           },
         },
       })
     end,
-    keys = {
-      { "<leader>fs", "<cmd>Telescope possession list<cr>", desc = "list sessions" },
-      { "<leader>sns", "<cmd>SSave<cr>", desc = "save session" },
-      { "<leader>snl", "<cmd>SLoad<cr>", desc = "load session" },
-      { "<leader>snc", "<cmd>SClose<cr>", desc = "close session" },
-      { "<leader>snd", "<cmd>SDelete<cr>", desc = "delete session" },
-    },
+    init = function()
+      local possession = require("nvim-possession")
+      vim.keymap.set("n", "<leader>fs", function()
+        possession.list()
+      end, { desc = "list sessions" })
+      vim.keymap.set("n", "<leader>snn", function()
+        possession.new()
+      end, { desc = "create new session" })
+      vim.keymap.set("n", "<leader>sns", function()
+        possession.update()
+      end, { desc = "save session" })
+      vim.keymap.set("n", "<leader>snx", function()
+        possession.delete()
+      end, { desc = "delete session" })
+    end,
   },
 
   {
