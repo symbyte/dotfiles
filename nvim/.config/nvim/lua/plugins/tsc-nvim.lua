@@ -5,7 +5,7 @@ return {
       use_trouble_qflist = true,
       flags = {
         noEmit = true,
-        watch = true,
+        watch = false,
       },
       pretty_errors = true,
     })
