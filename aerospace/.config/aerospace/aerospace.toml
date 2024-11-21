@@ -190,12 +190,12 @@ alt-shift-ctrl-k = ['join-with up', 'mode main']
 alt-shift-ctrl-l = ['join-with right', 'mode main']
 
 [workspace-to-monitor-force-assignment]
-B = 1
-D = 1 
+B = 'main' 
+D = 'main'
 T = 'main'
-S = 3
-C = 3
-Y = 1
+S = 2
+C = 2
+Y = 'main'
 
 [[on-window-detected]]
 if.app-id = 'net.kovidgoyal.kitty'
