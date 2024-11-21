@@ -2,6 +2,7 @@ return {
   { "nvim-tree/nvim-web-devicons" },
   {
     "pwntester/octo.nvim",
+    commit = "no-breaks",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope.nvim",
