@@ -46,3 +46,5 @@ wip() {
 alias "tks"="tmux kill-session"
 alias "tl"="tmuxp load "
 alias "ta"="tmux a"
+
+alias ls="eza --icons=auto"
