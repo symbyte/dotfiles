@@ -14,7 +14,6 @@ eval "$(zoxide init --cmd=cd bash)"
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
-[ -f ~/.forgit/forgit.plugin.zsh ] && source ~/.forgit/forgit.plugin.zsh
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
