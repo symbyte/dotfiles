@@ -6,12 +6,12 @@ return {
   opts = {
     formatters_by_ft = {
       mdx = { "prettier" },
-      ["javascript"] = { { "prettierd", "prettier" } },
-      ["javascriptreact"] = { { "prettierd", "prettier" } },
-      ["typescript"] = { { "prettierd", "prettier" } },
-      ["typescriptreact"] = { { "prettierd", "prettier" } },
-      ["json"] = { { "prettierd", "prettier" } },
-      ["jsonc"] = { { "prettierd", "prettier" } },
+      javascript = { "prettierd", "prettier", stop_after_first = true },
+      javascriptreact = { "prettierd", "prettier", stop_after_first = true },
+      typescript = { "prettierd", "prettier", stop_after_first = true },
+      typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+      json = { "prettierd", "prettier", stop_after_first = true },
+      jsonc = { "prettierd", "prettier", stop_after_first = true },
     },
   },
 }
