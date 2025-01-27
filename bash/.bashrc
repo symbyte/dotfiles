@@ -1,9 +1,9 @@
 if [ -r ~/.aliases ]; then
-	source ~/.aliases
+  source ~/.aliases
 fi
 
 if [ -r ~/.env ]; then
-	source ~/.env
+  source ~/.env
 fi
 
 eval "$(starship init bash)"
@@ -11,9 +11,6 @@ eval "$(starship init bash)"
 eval "$(zoxide init --cmd=cd bash)"
 
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
-
-# Set up fzf key bindings and fuzzy completion
-eval "$(fzf --bash)"
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
@@ -32,3 +29,5 @@ export HISTFILE=~/.bash_eternal_history
 # http://superuser.com/questions/20900/bash-history-loss
 PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 . "$HOME/.cargo/env"
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
