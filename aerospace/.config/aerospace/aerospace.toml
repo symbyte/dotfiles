@@ -241,11 +241,15 @@ if.app-id = 'com.google.Chrome.app.kjbdgfilnfhdoflbpgamdcdgpehopbep'
 run = 'move-node-to-workspace S'
 
 [[on-window-detected]]
+if.window-title-regex-substring = 'zoom workplace'
+run = 'move-node-to-workspace S'
+
+[[on-window-detected]]
 if.app-id = 'md.obsidian'
 run = 'move-node-to-workspace N'
 
 [[on-window-detected]]
-if.app-id = 'us.zoom.xos'
+if.window-title-regex-substring = 'zoom meeting'
 run = 'move-node-to-workspace M'
 
 [[on-window-detected]]
