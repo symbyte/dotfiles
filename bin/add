@@ -1,36 +1,35 @@
 #!/bin/bash
 
-usage () {
-  echo "Usage: add <MODULE_NAME> <PATH>(relative to HOME)";
+usage() {
+    echo "Usage: add <MODULE_NAME> <PATH>(relative to HOME)"
 }
 
 MODULE_NAME=$1
 TARGET=$2
 
 if [ $# != 2 ]; then
-  usage
-  exit
+    usage
+    exit
 fi
 
 if [[ -d $MODULE_NAME ]]; then
-  # noop
-  :
+    # noop
+    :
 else
-  mkdir $MODULE_NAME
+    mkdir $MODULE_NAME
 fi
 
-if [[ -f $HOME/$TARGET ]]; then
-  RSYNC_TARGET=$TARGET
-elif [[ -d $HOME/$TARGET ]]; then
-  RSYNC_TARGET=$TARGET/*
+if [[ -f "$HOME/$TARGET" ]]; then
+    RSYNC_TARGET=$TARGET
+elif [[ -d "$HOME/$TARGET" ]]; then
+    RSYNC_TARGET="$TARGET/*"
 else
-  echo "$TARGET is not a valid file or directory in $HOME"
-  exit
+    echo "$TARGET is not a valid file or directory in $HOME"
+    exit
 fi
 
-pushd $HOME > /dev/null
+pushd "$HOME" >/dev/null || exit
 
-rsync -R $RSYNC_TARGET dotfiles/$MODULE_NAME
+rsync -R "$RSYNC_TARGET" dotfiles/"$MODULE_NAME"
 
-popd > /dev/null
-
+popd >/dev/null || exit
