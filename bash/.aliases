@@ -26,6 +26,7 @@ alias "gpf"="git push --force-with-lease"
 alias "grc"="git rebase --continue"
 alias "gcb"="git branch --merged | egrep -v \"(^\*|master|develop|test)\" | xargs git branch -d"
 alias "lg"="lazygit"
+alias "ln"="lazynpm"
 alias "dfadd"="~/dotfiles/bin/add"
 
 if [ -n "$NVIM_LISTEN_ADDRESS" ]; then
