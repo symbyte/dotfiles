@@ -15,6 +15,7 @@
 [delta]
     navigate = true
     line-numbers = true
+    side-by-side = true
 [alias]
     lg = !git lg1
     lg1 = !git lg1-specific --all
