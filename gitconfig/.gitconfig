@@ -45,6 +45,9 @@
   tool = nvimdiff
   conflictstyle = zdiff3
 
+[rerere]
+	enabled = true
+
 [mergetool]
 	keepBackup = false
 	prompt = false
