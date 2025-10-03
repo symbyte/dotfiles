@@ -3,7 +3,7 @@ return {
   opts = {
     styles = {
       zen = {
-        width = 240,
+        width = 660,
       },
     },
   },

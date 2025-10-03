@@ -141,25 +141,38 @@ return {
       })
     end,
     keys = {
-      { "<leader>oa", "<cmd>Octo actions<cr>", desc = "actions" },
+      { "<leader>ga", "<cmd>Octo actions<cr>", desc = "actions" },
       {
-        "<leader>oc",
-        "<cmd>Octo search assignee:@me is:open -commenter:@me<cr>",
-        desc = "open my PR requsts I've [c]ommited to reviewing",
+        "<leader>rc",
+        "<cmd>Octo pr create draft<cr>",
+        desc = "[c]reate a pr in a draft state",
       },
       {
-        "<leader>or",
-        "<cmd>Octo search user-review-requested:@me -team-review-requested:Product/was-app-maintainer -team-review-requested:Product/wasappteam -team-review-requested:Product/explore-management is:open -commenter:@me -author:build-svc archived:false -assignee:@me<cr>",
+        "<leader>rr",
+        "<cmd>Octo search user-review-requested:@me -team-review-requested:Product/was-app-maintainer -team-review-requested:Product/wasappteam -team-review-requested:Product/explore-management is:open -commenter:@me -author:build-svc archived:false<cr>",
         desc = "open my review [r]equests",
       },
       {
-        "<leader>ow",
-        "<cmd>Octo search is:pr is:open commenter:@me -author:@me<cr>",
+        "<leader>rw",
+        "<cmd>Octo search is:pr is:open -author:@me -repo:Product/service-was-api reviewed-by:@me sort:updated-desc<cr>",
         desc = "open PRs I'm [w]orking",
       },
-      { "<leader>om", "<cmd>Octo search is:pr is:open author:@me<cr>", desc = "open [m]y PRs" },
-      { "<leader>sg", "<cmd>Octo search<cr>", desc = "search github" },
-      { "<leader>oh", "<cmd>Octo pr checks<cr>", desc = "Show PR c[h]ecks" },
+      {
+        "<leader>rC",
+        "<cmd>Octo search is:pr is:open -author:@me -repo:Product/service-was-api commenter:@me<cr>",
+        desc = "open PRs I've [C]ommented on",
+      },
+      {
+        "<leader>rm",
+        "<cmd>Octo search is:pr is:open author:@me -team-review-requested:Product/was-app-maintainer -team-review-requested:Product/wasappteam<cr>",
+        desc = "open [m]y PRs",
+      },
+      {
+        "<leader>rn",
+        "<cmd>Octo pr search review:none is:open review-requested:@me<cr>",
+        desc = "open PRs in [n]eed of review",
+      },
+      { "<leader>ph", "<cmd>Octo pr checks<cr>", desc = "Show PR c[h]ecks" },
     },
   },
   {
