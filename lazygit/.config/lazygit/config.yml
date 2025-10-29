@@ -3,8 +3,5 @@ gui:
 git:
   mainBranches: [master, main, dev]
   skipHookPrefix: WIP
-  paging:
-    colorArg: always
-    pager: delta --dark --paging=never
 services:
   "github.eng.tenable.com": "github:github.eng.tenable.com"
