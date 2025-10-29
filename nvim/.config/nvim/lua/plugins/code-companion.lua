@@ -49,7 +49,7 @@ return {
             end,
           },
           ---On exiting and entering neovim, loads the last chat on opening chat
-          continue_last_chat = false,
+          continue_last_chat = true,
           ---When chat is cleared with `gx` delete the chat from history
           delete_on_clearing_chat = false,
           ---Directory path to save the chats
@@ -99,6 +99,15 @@ return {
       chat = { adapter = { name = "copilot", model = "gpt-5" } },
       inline = { adapter = { name = "copilot", model = "gpt-5" } },
       cmd = { adapter = { name = "copilot", model = "gpt-5" } },
+    },
+    adapter = {
+      copilot = function()
+        return require("codecompanion.adapters").extend("copilot", {
+          env = {
+            api_key = "cmd: echo $OPENAI_API_KEY",
+          },
+        })
+      end,
     },
   },
   dependencies = {
