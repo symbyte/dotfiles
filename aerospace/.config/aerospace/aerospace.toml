@@ -269,3 +269,7 @@ run = 'move-node-to-workspace U'
 [[on-window-detected]]
 if.app-id = 'com.cockos.LICEcap'
 run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = "com.mitchellh.ghostty"
+run = ["layout floating"]
