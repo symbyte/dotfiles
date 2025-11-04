@@ -2,6 +2,7 @@ return {
   { "nvim-tree/nvim-web-devicons" },
   {
     "pwntester/octo.nvim",
+    -- commit = "916932d3af7f46359d77432d85ceea37fc006110",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope.nvim",
@@ -149,22 +150,22 @@ return {
       },
       {
         "<leader>rr",
-        "<cmd>Octo search user-review-requested:@me -team-review-requested:Product/was-app-maintainer -team-review-requested:Product/wasappteam -team-review-requested:Product/explore-management is:open -commenter:@me -author:build-svc archived:false<cr>",
+        "<cmd>Octo search user-review-requested:@me -team-review-requested:tenb-Product/was-app-maintainer -team-review-requested:tenb-Product/wasappteam is:open -reviewed-by:@me -author:build-svc archived:false<cr>",
         desc = "open my review [r]equests",
       },
       {
         "<leader>rw",
-        "<cmd>Octo search is:pr is:open -author:@me -repo:Product/service-was-api reviewed-by:@me sort:updated-desc<cr>",
+        "<cmd>Octo search is:pr is:open -author:@me -repo:tenb-Product/service-was-api reviewed-by:@me review:required sort:updated-desc<cr>",
         desc = "open PRs I'm [w]orking",
       },
       {
         "<leader>rC",
-        "<cmd>Octo search is:pr is:open -author:@me -repo:Product/service-was-api commenter:@me<cr>",
+        "<cmd>Octo search is:pr is:open -author:@me -repo:tenb-Product/service-was-api commenter:@me<cr>",
         desc = "open PRs I've [C]ommented on",
       },
       {
         "<leader>rm",
-        "<cmd>Octo search is:pr is:open author:@me -team-review-requested:Product/was-app-maintainer -team-review-requested:Product/wasappteam<cr>",
+        "<cmd>Octo search is:pr is:open author:@me -team-review-requested:tenb-Product/was-app-maintainer -team-review-requested:tenb-Product/wasappteam<cr>",
         desc = "open [m]y PRs",
       },
       {
