@@ -165,7 +165,7 @@ return {
       },
       {
         "<leader>rm",
-        "<cmd>Octo search is:pr is:open author:@me -team-review-requested:tenb-Product/was-app-maintainer -team-review-requested:tenb-Product/wasappteam<cr>",
+        "<cmd>Octo search is:pr is:open author:@me<cr>",
         desc = "open [m]y PRs",
       },
       {
