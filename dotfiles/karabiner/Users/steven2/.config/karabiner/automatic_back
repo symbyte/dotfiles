@@ -1,0 +1,25 @@
+{
+   "maintainers": [
+      "uphy"
+   ],
+   "rules": [
+      {
+         "description": "f to left ctrl",
+         "manipulators": [
+            {
+               "from": {
+                  "key_code": "f",
+                  "modifiers": {}
+               },
+               "to": [
+                  {
+                     "key_code": "left_control"
+                  }
+               ],
+               "type": "basic"
+            }
+         ]
+      }
+   ],
+   "title": "Home Row Mods"
+}
