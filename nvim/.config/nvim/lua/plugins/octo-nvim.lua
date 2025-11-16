@@ -150,17 +150,17 @@ return {
       },
       {
         "<leader>rr",
-        "<cmd>Octo search user-review-requested:@me -team-review-requested:tenb-Product/was-app-maintainer -team-review-requested:tenb-Product/wasappteam is:open -reviewed-by:@me -author:build-svc archived:false<cr>",
+        "<cmd>Octo search user-review-requested:@me<cr>",
         desc = "open my review [r]equests",
       },
       {
         "<leader>rw",
-        "<cmd>Octo search is:pr is:open -author:@me -repo:tenb-Product/service-was-api reviewed-by:@me review:required sort:updated-desc<cr>",
+        "<cmd>Octo search is:pr is:open -author:@me reviewed-by:@me review:required sort:updated-desc<cr>",
         desc = "open PRs I'm [w]orking",
       },
       {
         "<leader>rC",
-        "<cmd>Octo search is:pr is:open -author:@me -repo:tenb-Product/service-was-api commenter:@me<cr>",
+        "<cmd>Octo search is:pr is:open -author:@me commenter:@me<cr>",
         desc = "open PRs I've [C]ommented on",
       },
       {

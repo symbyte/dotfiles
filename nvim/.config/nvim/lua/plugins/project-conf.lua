@@ -4,7 +4,7 @@ return {
     manual_mode = true,
     detection_methods = { "lsp", "pattern" },
     ignore_lsp = { "eslint", "marksman" },
-    patterns = { "=client", ">projects", ".git" },
+    patterns = { "tsconfig.json", ".git" },
     silent_chdir = false,
     show_hidden = true,
     scope_chdir = "tab",

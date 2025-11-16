@@ -1,9 +1,9 @@
 if [ -r ~/.aliases ]; then
-  source ~/.aliases
+    source ~/.aliases
 fi
 
 if [ -r ~/.env ]; then
-  source ~/.env
+    source ~/.env
 fi
 
 [ -f /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
@@ -12,7 +12,7 @@ eval "$(starship init bash)"
 
 eval "$(zoxide init --cmd=cd bash)"
 
-[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+# [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
@@ -32,3 +32,6 @@ export HISTFILE=~/.bash_eternal_history
 PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+export PATH="$HOME/.local/bin:$PATH"
+
+export PATH=$PATH:$(go env GOPATH)/bin

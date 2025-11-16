@@ -194,15 +194,14 @@ alt-shift-ctrl-l = ['join-with right', 'mode main']
 
 [workspace-to-monitor-force-assignment]
 B = 'main'
-D = 'main'
 T = 'main'
 S = 1
 C = 1
 Y = 'main'
 
 [[on-window-detected]]
-if.app-id = 'com.michellh.ghostty'
-run = 'move-node-to-workspace T'
+if.app-id = 'com.mitchellh.ghostty'
+run = ["layout floating", 'move-node-to-workspace T']
 # [[on-window-detected]]
 # if.app-id = 'com.google.Chrome'
 # run = 'move-node-to-workspace D'
@@ -250,6 +249,10 @@ if.app-id = 'md.obsidian'
 run = 'move-node-to-workspace N'
 
 [[on-window-detected]]
+if.app-id = 'notion.id'
+run = 'move-node-to-workspace N'
+
+[[on-window-detected]]
 if.window-title-regex-substring = 'zoom meeting'
 run = 'move-node-to-workspace M'
 
@@ -266,9 +269,9 @@ if.app-name-regex-substring = "stream deck"
 run = 'move-node-to-workspace U'
 
 [[on-window-detected]]
-if.app-id = 'com.cockos.LICEcap'
-run = 'layout floating'
+if.app-id = 'com.linear'
+run = 'move-node-to-workspace P'
 
 [[on-window-detected]]
-if.app-id = "com.mitchellh.ghostty"
-run = ["layout floating"]
+if.app-id = 'com.cockos.LICEcap'
+run = 'layout floating'
