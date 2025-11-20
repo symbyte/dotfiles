@@ -4,6 +4,7 @@ return {
     manual_mode = true,
     detection_methods = { "lsp", "pattern" },
     ignore_lsp = { "eslint", "marksman" },
+    exclude_dirs = { "cypress" },
     patterns = { "tsconfig.json", ".git" },
     silent_chdir = false,
     show_hidden = true,
