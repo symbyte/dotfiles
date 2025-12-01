@@ -34,9 +34,6 @@
     required = true
     clean = git-lfs clean -- %f
     process = git-lfs filter-process
-[filesystem "AdoptOpenJDK|1.8.0_242|/dev/disk1s1"]
-	timestampResolution = 1001 milliseconds
-	minRacyThreshold = 0 nanoseconds
 [pull]
 	rebase = true
 [diff]

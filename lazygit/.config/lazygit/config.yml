@@ -1,7 +1,8 @@
 gui:
   nerdFontsVersion: "3"
 git:
-  mainBranches: [master, main, dev]
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
+  mainBranches: [master, main, dev, staging]
   skipHookPrefix: WIP
-services:
-  "github.eng.tenable.com": "github:github.eng.tenable.com"
