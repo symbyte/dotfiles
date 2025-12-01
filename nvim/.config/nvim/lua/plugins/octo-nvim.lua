@@ -150,7 +150,7 @@ return {
       },
       {
         "<leader>rr",
-        "<cmd>Octo search user-review-requested:@me<cr>",
+        "<cmd>Octo search user-review-requested:@me review:required<cr>",
         desc = "open my review [r]equests",
       },
       {
