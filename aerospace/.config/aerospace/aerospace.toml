@@ -201,7 +201,15 @@ Y = 'main'
 
 [[on-window-detected]]
 if.app-id = 'com.mitchellh.ghostty'
-run = ["layout floating", 'move-node-to-workspace T']
+run = 'move-node-to-workspace T'
+
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = 'com.github.wez.wezterm'
+run = 'move-node-to-workspace T'
 
 [[on-window-detected]]
 if.app-id = 'com.figma.Desktop'
@@ -274,3 +282,7 @@ run = 'move-node-to-workspace P'
 [[on-window-detected]]
 if.app-id = 'com.cockos.LICEcap'
 run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome.app.kjgfgldnnfoeklkmfkjfagphfepbbdan'
+run = 'move-node-to-workspace M'
