@@ -26,7 +26,9 @@ alias "gpf"="git push --force-with-lease"
 alias "grc"="git rebase --continue"
 alias "gcb"="git branch --merged | egrep -v \"(^\*|master|develop|test)\" | xargs git branch -d"
 alias "lg"="lazygit"
+alias "pr"="nvim -c 'Octo pr'"
 alias "dfadd"="~/dotfiles/bin/add"
+alias "db"="lazysql"
 
 if [ -n "$NVIM_LISTEN_ADDRESS" ]; then
     alias nvim=nvr -cc split --remote-wait +'set bufhidden=wipe'
@@ -48,3 +50,293 @@ alias "tl"="tmuxp load "
 alias "ta"="tmux a"
 
 alias ls="eza --icons=auto"
+
+# Remove nvim swap files containing "octo"
+alias clean-octo-swaps="find ~/.local/state/nvim/swap -name '*octo*' -type f -delete"
+
+# Open all PR worktrees in wezterm tabs with change summary
+allprs() {
+  local wt_dir="$HOME/projects/wt"
+  local cache_dir="$HOME/.cache/allprs"
+  local pr_dirs=($(ls -d "$wt_dir"/pr-* 2>/dev/null))
+
+  [[ ${#pr_dirs[@]} -eq 0 ]] && echo "No pr-* worktrees found" && return 1
+
+  mkdir -p "$cache_dir"
+
+  local summary_file="$cache_dir/summary.txt"
+  echo "PR Review Summary" > "$summary_file"
+  echo "════════════════════════════════════════════════════════════" >> "$summary_file"
+  echo "" >> "$summary_file"
+
+  local has_changes=false
+  local state_file="$cache_dir/current_state.json"
+
+  for dir in "${pr_dirs[@]}"; do
+    local pr_num=$(basename "$dir" | sed 's/pr-//')
+    local cache_file="$cache_dir/pr-$pr_num.json"
+
+    # Get current PR state from the worktree directory - write to file to preserve JSON
+    (cd "$dir" && gh pr view "$pr_num" --json number,title,author,commits,comments,reviews,statusCheckRollup,isDraft,state 2>/dev/null) > "$state_file"
+    [[ ! -s "$state_file" ]] && continue
+
+    # Check if PR is still open
+    local pr_state=$(jq -r '.state' "$state_file")
+    [[ "$pr_state" != "OPEN" ]] && continue
+
+    local title=$(jq -r '.title' "$state_file")
+    local author=$(jq -r '.author.login' "$state_file")
+    local commit_count=$(jq '.commits | length' "$state_file")
+    local latest_commit=$(jq -r '.commits[-1].oid // "none"' "$state_file")
+    local is_draft=$(jq -r '.isDraft' "$state_file")
+    local ci_status=$(jq -r '
+      .statusCheckRollup |
+      if length == 0 then "pending"
+      elif all(.state == "SUCCESS" or .state == "NEUTRAL" or .state == "SKIPPED") then "pass"
+      elif any(.state == "FAILURE" or .state == "ERROR") then "fail"
+      else "pending" end' "$state_file")
+
+    # Extract comment IDs and content for comparison
+    local comment_ids=$(jq -r '[.comments[].id] | sort | join(",")' "$state_file")
+    local review_ids=$(jq -r '[.reviews[].id] | sort | join(",")' "$state_file")
+
+    # Compare to cached state
+    local changes=()
+    local new_conversations=()
+    if [[ -f "$cache_file" ]]; then
+      local old_commit_count=$(jq -r '.commit_count // 0' "$cache_file")
+      local old_latest_commit=$(jq -r '.latest_commit // "none"' "$cache_file")
+      local old_ci_status=$(jq -r '.ci_status // "unknown"' "$cache_file")
+      local old_is_draft=$(jq -r '.is_draft // "unknown"' "$cache_file")
+      local old_comment_ids=$(jq -r '.comment_ids // ""' "$cache_file")
+      local old_review_ids=$(jq -r '.review_ids // ""' "$cache_file")
+
+      # Check for new commits
+      if [[ "$latest_commit" != "$old_latest_commit" ]]; then
+        local new_commit_count=$(( commit_count - old_commit_count ))
+        [[ $new_commit_count -gt 0 ]] && changes+=("$new_commit_count new commit(s)")
+      fi
+
+      # Check CI status change
+      [[ "$ci_status" != "$old_ci_status" ]] && changes+=("CI: $old_ci_status → $ci_status")
+
+      # Check draft status change
+      [[ "$is_draft" != "$old_is_draft" ]] && changes+=("draft: $old_is_draft → $is_draft")
+
+      # Find new comments and show their content
+      if [[ "$comment_ids" != "$old_comment_ids" ]]; then
+        local old_ids_array=(${(s:,:)old_comment_ids})
+        # Use jq to clean body: replace newlines with spaces, truncate to 60 chars
+        while IFS=$'\t' read -r cid cauthor cbody; do
+          [[ -z "$cid" ]] && continue
+          if [[ ! " ${old_ids_array[*]} " =~ " ${cid} " ]]; then
+            new_conversations+=("💬 $cauthor: $cbody")
+          fi
+        done <<< "$(jq -r '.comments[] | [.id, .author.login, (.body | gsub("\n"; " ") | gsub("\r"; "") | .[0:60] + (if length > 60 then "..." else "" end))] | @tsv' "$state_file")"
+      fi
+
+      # Find new reviews and show their content
+      if [[ "$review_ids" != "$old_review_ids" ]]; then
+        local old_review_array=(${(s:,:)old_review_ids})
+        while IFS=$'\t' read -r rid rauthor rstate rbody; do
+          [[ -z "$rid" ]] && continue
+          if [[ ! " ${old_review_array[*]} " =~ " ${rid} " ]]; then
+            local review_icon="📝"
+            [[ "$rstate" == "APPROVED" ]] && review_icon="✅"
+            [[ "$rstate" == "CHANGES_REQUESTED" ]] && review_icon="🔄"
+            [[ "$rstate" == "COMMENTED" ]] && review_icon="💭"
+            if [[ -n "$rbody" ]]; then
+              new_conversations+=("$review_icon $rauthor ($rstate): $rbody")
+            else
+              new_conversations+=("$review_icon $rauthor: $rstate")
+            fi
+          fi
+        done <<< "$(jq -r '.reviews[] | [.id, .author.login, .state, ((.body // "") | gsub("\n"; " ") | gsub("\r"; "") | .[0:60] + (if length > 60 then "..." else "" end))] | @tsv' "$state_file")"
+      fi
+    else
+      changes+=("first time seeing this PR")
+    fi
+
+    # Write changes to summary file
+    if [[ ${#changes[@]} -gt 0 || ${#new_conversations[@]} -gt 0 ]]; then
+      has_changes=true
+      echo "━━━ #$pr_num: $title [$author] ━━━" >> "$summary_file"
+      for change in "${changes[@]}"; do
+        echo "  • $change" >> "$summary_file"
+      done
+      for conv in "${new_conversations[@]}"; do
+        echo "  $conv" >> "$summary_file"
+      done
+      echo "" >> "$summary_file"
+    fi
+
+    # Update cache with comment/review IDs
+    cat > "$cache_file" <<EOF
+{
+  "pr_num": $pr_num,
+  "commit_count": $commit_count,
+  "latest_commit": "$latest_commit",
+  "ci_status": "$ci_status",
+  "is_draft": "$is_draft",
+  "comment_ids": "$comment_ids",
+  "review_ids": "$review_ids",
+  "last_checked": "$(date -Iseconds)"
+}
+EOF
+  done
+
+  [[ "$has_changes" == false ]] && echo "No changes since last check." >> "$summary_file"
+
+  echo "" >> "$summary_file"
+  echo "Last checked: $(date '+%Y-%m-%d %H:%M')" >> "$summary_file"
+
+  # Open the summary in the first tab, then PR tabs after
+  local window_id=""
+  local pane_id=""
+
+  # First tab: summary view (stays open with less)
+  pane_id=$(wezterm cli spawn --new-window -- zsh -c "less -R '$summary_file'" 2>/dev/null)
+  window_id=$(wezterm cli list --format json | jq -r ".[] | select(.pane_id == $pane_id) | .window_id")
+
+  # Subsequent tabs: PR worktrees
+  for dir in "${pr_dirs[@]}"; do
+    local pr_num=$(basename "$dir" | sed 's/pr-//')
+    # Skip closed PRs
+    local pr_state=$(cd "$dir" && gh pr view "$pr_num" --json state --jq '.state' 2>/dev/null)
+    [[ "$pr_state" != "OPEN" ]] && continue
+
+    wezterm cli spawn --window-id "$window_id" --cwd "$dir" -- zsh -ic "pr" >/dev/null 2>&1
+  done
+
+  # Cleanup temp file
+  rm -f "$state_file"
+
+  # Also print summary to current terminal
+  cat "$summary_file"
+}
+
+# Review PRs with worktrees
+prs() {
+  local wt_dir="$HOME/projects/wt"
+  local swap_dir="$HOME/.local/state/nvim/swap"
+  local selected
+
+  local open_prs=$(ls "$swap_dir" 2>/dev/null | grep -oE 'pull%[0-9]+' | cut -d'%' -f2 | sort -u)
+
+  selected=$(
+    gh search prs --review-requested @me --state open --json number,title,author,isDraft,createdAt --limit 50 2>/dev/null \
+    | jq -r '.[] |
+        (if .isDraft then "draft" else "open" end) as $state |
+        (((now - (.createdAt | fromdateiso8601)) / 86400) | floor) as $days |
+        (if $days == 0 then "today" elif $days == 1 then "1d" else "\($days)d" end) as $age |
+        "\(.number)\t\($state)\t\($age)\t\(.title)\t\(.author.login)"' \
+    | while IFS=$'\t' read -r num state age title author; do
+        if [[ -d "$wt_dir/pr-$num" ]] && ! echo "$open_prs" | grep -qx "$num"; then
+          local status=$(cd "$wt_dir/pr-$num" 2>/dev/null && gh pr view --json statusCheckRollup --jq '
+            .statusCheckRollup |
+            if length == 0 then "pending"
+            elif all(.state == "SUCCESS" or .state == "NEUTRAL" or .state == "SKIPPED") then "pass"
+            elif any(.state == "FAILURE" or .state == "ERROR") then "fail"
+            else "pending" end' 2>/dev/null || echo "pending")
+          echo "$num\t#$num - $title [$author] ($state, $status, $age)"
+        fi
+      done \
+    | fzf --delimiter='\t' --with-nth=2 --preview-window=hidden \
+          --header='PRs needing review (with worktrees)'
+  )
+
+  [[ -z "$selected" ]] && return
+
+  local pr_num="${selected%%$'\t'*}"
+  cd "$wt_dir/pr-$pr_num" && nvim -c 'Octo pr'
+}
+
+# Create worktree from branch with fzf selection
+wt() {
+  local repo_dir="$HOME/projects/apricot"
+  local wt_base="$HOME/projects/wt"
+
+  # Fetch latest branches
+  (builtin cd "$repo_dir" && git fetch --prune --quiet)
+
+  # Select branch with fzf, staging as default
+  local branch
+  branch=$(
+    builtin cd "$repo_dir" && git branch -r --format='%(refname:short)' \
+    | sed 's|^origin/||' \
+    | awk '!seen[$0]++' \
+    | fzf --query="staging" --select-1 --header="Select base branch"
+  )
+
+  [[ -z "$branch" ]] && return
+
+  # Prompt for worktree name
+  local wt_name
+  echo -n "Worktree name: "
+  read wt_name
+
+  [[ -z "$wt_name" ]] && echo "Cancelled" && return
+
+  local wt_path="$wt_base/$wt_name"
+
+  # Create worktree
+  (builtin cd "$repo_dir" && git worktree add "$wt_path" "origin/$branch")
+
+  [[ $? -ne 0 ]] && return 1
+
+  cd "$wt_path" && $EDITOR .
+}
+
+# Query Linear issue status (returns: completed, canceled, started, unstarted, backlog, triage)
+_linear_issue_status() {
+  local issue_id="$1"
+  local response
+  response=$(curl -s -X POST https://api.linear.app/graphql \
+    -H "Content-Type: application/json" \
+    -H "Authorization: ${LINEAR_API_KEY}" \
+    -d "{\"query\": \"{ issue(id: \\\"${issue_id}\\\") { state { type } } }\"}")
+  echo "$response" | jq -r '.data.issue.state.type // "unknown"'
+}
+
+# Remove worktrees with fzf multi-select (closed Linear issues pre-selected)
+wtd() {
+  local repo_dir="$HOME/projects/apricot"
+  local wt_base="$HOME/projects/wt"
+
+  echo "Checking Linear issue statuses..."
+
+  # Build list: closed issues first (will be pre-selected)
+  local -a closed_items open_items
+  local wt_name issue_state
+  for wt_name in $(command ls -1 "$wt_base" 2>/dev/null); do
+    if [[ "$wt_name" =~ ^[a-z]{3,}-[0-9]+$ ]] && [[ ! "$wt_name" =~ ^pr- ]]; then
+      issue_state=$(_linear_issue_status "$wt_name")
+      if [[ "$issue_state" == "completed" || "$issue_state" == "canceled" ]]; then
+        closed_items+=("● $wt_name")
+      else
+        open_items+=("  $wt_name")
+      fi
+    else
+      open_items+=("  $wt_name")
+    fi
+  done
+
+  local total_closed=${#closed_items[@]}
+
+  local -a selected
+  selected=("${(@f)$(
+    { printf '%s\n' "${closed_items[@]}"; printf '%s\n' "${open_items[@]}"; } \
+    | fzf --multi \
+          --header="● = closed issue (${total_closed} found). All pre-selected, deselect to keep." \
+          --bind "start:select-all"
+  )}")
+
+  [[ ${#selected[@]} -eq 0 || -z "${selected[1]}" ]] && return
+
+  for item in "${selected[@]}"; do
+    wt_name="${item#● }"
+    wt_name="${wt_name#  }"
+    echo "Removing $wt_name..."
+    git -C "$repo_dir" worktree remove "${wt_base}/${wt_name}" --force
+  done
+}
