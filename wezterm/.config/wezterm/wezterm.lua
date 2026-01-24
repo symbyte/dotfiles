@@ -22,20 +22,33 @@ wezterm.on("format-tab-title", function(tab)
   return tab.active_pane.title
 end)
 
--- Adjust font size based on monitor (larger font for external displays)
-wezterm.on("window-resized", function(window, pane)
+-- Adjust font size based on screen size (larger font for external displays)
+-- Uses screen dimensions, not window dimensions, so resizing window doesn't affect font
+local function update_font_for_screen(window)
   local overrides = window:get_config_overrides() or {}
-  local dims = window:get_dimensions()
+  local screens = wezterm.gui.screens()
+  local active_screen = screens.active
 
+  -- Use the active screen's dimensions
   -- Built-in MacBook display is typically around 1800px wide at effective resolution
   -- External monitors are usually wider
-  if dims.pixel_width > 2000 then
+  if active_screen.width > 2000 then
     overrides.font_size = 14.0
   else
     overrides.font_size = 11.0
   end
 
   window:set_config_overrides(overrides)
+end
+
+-- Update font when window is created
+wezterm.on("window-config-reloaded", function(window, pane)
+  update_font_for_screen(window)
+end)
+
+-- Update font when window moves to different screen
+wezterm.on("window-resized", function(window, pane)
+  update_font_for_screen(window)
 end)
 
 -- Window appearance
@@ -50,7 +63,7 @@ config.window_padding = {
 -- Tab bar styling
 config.use_fancy_tab_bar = true
 config.tab_bar_at_bottom = false
-config.hide_tab_bar_if_only_one_tab = true
+config.hide_tab_bar_if_only_one_tab = false
 config.window_frame = {
   font = wezterm.font("Monaspace Neon"),
   font_size = 14.0,
