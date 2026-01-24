@@ -19,6 +19,124 @@ SwitchWorkspace(name) {
 }
 
 ; ============================================
+; Audio Focus Toggle
+; ============================================
+global AudioFocusedPID := 0
+global AudioSavedMuteStates := Map()
+
+ToggleAudioFocus() {
+    global AudioFocusedPID, AudioSavedMuteStates
+
+    currentPID := WinGetPID("A")
+
+    if (AudioFocusedPID = 0) {
+        ApplyAudioFocus(currentPID)
+    } else if (AudioFocusedPID = currentPID) {
+        RestoreAudio()
+    } else {
+        RestoreAudio()
+        ApplyAudioFocus(currentPID)
+    }
+}
+
+ApplyAudioFocus(targetPID) {
+    global AudioFocusedPID, AudioSavedMuteStates
+
+    windowTitle := WinGetTitle("A")
+    AudioSavedMuteStates := Map()
+
+    sessions := GetAudioSessions()
+
+    for session in sessions {
+        if (session.pid = targetPID)
+            continue
+
+        try {
+            currentMute := GetSessionMute(session.volume)
+            AudioSavedMuteStates[session.pid] := currentMute
+
+            if (!currentMute)
+                SetSessionMute(session.volume, true)
+        }
+    }
+
+    AudioFocusedPID := targetPID
+    TrayTip("Audio Focused", windowTitle, 1)
+}
+
+RestoreAudio() {
+    global AudioFocusedPID, AudioSavedMuteStates
+
+    sessions := GetAudioSessions()
+
+    for session in sessions {
+        if (AudioSavedMuteStates.Has(session.pid)) {
+            try {
+                wasMuted := AudioSavedMuteStates[session.pid]
+                SetSessionMute(session.volume, wasMuted)
+            }
+        }
+    }
+
+    AudioSavedMuteStates := Map()
+    AudioFocusedPID := 0
+    TrayTip("Audio Restored", "All audio restored", 1)
+}
+
+GetAudioSessions() {
+    sessions := []
+
+    IMMDeviceEnumerator := ComObject("{BCDE0395-E52F-467C-8E3D-C4579291692E}", "{A95664D2-9614-4F35-A746-DE8DB63617E6}")
+
+    ComCall(4, IMMDeviceEnumerator, "uint", 0, "uint", 1, "ptr*", &device := 0)
+    IMMDevice := ComValue(13, device)
+
+    GUID_IAudioSessionManager2 := Buffer(16)
+    DllCall("ole32\CLSIDFromString", "str", "{77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F}", "ptr", GUID_IAudioSessionManager2)
+    ComCall(3, IMMDevice, "ptr", GUID_IAudioSessionManager2, "uint", 23, "ptr", 0, "ptr*", &manager := 0)
+    IAudioSessionManager2 := ComValue(13, manager)
+
+    ComCall(5, IAudioSessionManager2, "ptr*", &enumerator := 0)
+    IAudioSessionEnumerator := ComValue(13, enumerator)
+
+    ComCall(3, IAudioSessionEnumerator, "int*", &count := 0)
+
+    Loop count {
+        try {
+            ComCall(4, IAudioSessionEnumerator, "int", A_Index - 1, "ptr*", &sessionControl := 0)
+            IAudioSessionControl := ComValue(13, sessionControl)
+
+            GUID_IAudioSessionControl2 := Buffer(16)
+            DllCall("ole32\CLSIDFromString", "str", "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}", "ptr", GUID_IAudioSessionControl2)
+            ComCall(0, IAudioSessionControl, "ptr", GUID_IAudioSessionControl2, "ptr*", &sessionControl2 := 0)
+            IAudioSessionControl2 := ComValue(13, sessionControl2)
+
+            ComCall(14, IAudioSessionControl2, "uint*", &pid := 0)
+
+            if (pid = 0)
+                continue
+
+            GUID_ISimpleAudioVolume := Buffer(16)
+            DllCall("ole32\CLSIDFromString", "str", "{87CE5498-68D6-44E5-9215-6DA47EF883D8}", "ptr", GUID_ISimpleAudioVolume)
+            ComCall(0, IAudioSessionControl, "ptr", GUID_ISimpleAudioVolume, "ptr*", &volumePtr := 0)
+
+            sessions.Push({pid: pid, volume: volumePtr})
+        }
+    }
+
+    return sessions
+}
+
+GetSessionMute(volumePtr) {
+    ComCall(4, volumePtr, "int*", &mute := 0)
+    return mute
+}
+
+SetSessionMute(volumePtr, mute) {
+    ComCall(5, volumePtr, "int", mute, "ptr", 0)
+}
+
+; ============================================
 ; Block Win key alone (Start menu)
 ; Use ~LWin to allow it to pass through for combos
 ; ============================================
@@ -38,7 +156,7 @@ SwitchWorkspace(name) {
 ; Block ALL Win+key combinations
 ; Letters
 ; ============================================
-#a::return
+#a::ToggleAudioFocus()  ; EXCEPTION: Audio focus toggle
 #b::return
 #c::return
 #d::return
