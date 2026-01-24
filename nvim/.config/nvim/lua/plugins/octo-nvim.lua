@@ -21,7 +21,7 @@ return {
             reload = { lhs = "<C-r>", desc = "reload issue" },
             open_in_browser = { lhs = "<C-b>", desc = "open issue in browser" },
             copy_url = { lhs = "<C-y>", desc = "copy url to system clipboard" },
-            add_assignee = { lhs = "<space>aa", desc = "add assignee" },
+            -- add_assignee = { lhs = "<space>aa", desc = "add assignee" }, conflicts with my ai toggle, and I never use this
             remove_assignee = { lhs = "<space>ad", desc = "remove assignee" },
             create_label = { lhs = "<space>lc", desc = "create label" },
             add_label = { lhs = "<space>la", desc = "add label" },
@@ -57,7 +57,7 @@ return {
             open_in_browser = { lhs = "<C-b>", desc = "open PR in browser" },
             copy_url = { lhs = "<C-y>", desc = "copy url to system clipboard" },
             goto_file = { lhs = "gf", desc = "go to file" },
-            add_assignee = { lhs = "<space>aa", desc = "add assignee" },
+            -- add_assignee = { lhs = "<space>aa", desc = "add assignee" }, conflicts with my ai toggle, and I never use this
             remove_assignee = { lhs = "<space>ad", desc = "remove assignee" },
             create_label = { lhs = "<space>lc", desc = "create label" },
             add_label = { lhs = "<space>la", desc = "add label" },
@@ -143,6 +143,7 @@ return {
     end,
     keys = {
       { "<leader>ga", "<cmd>Octo actions<cr>", desc = "actions" },
+      { "<leader>op", "<cmd>Octo pr<cr>", desc = "[o]cto [p]r for branch" },
       {
         "<leader>rc",
         "<cmd>Octo pr create draft<cr>",
