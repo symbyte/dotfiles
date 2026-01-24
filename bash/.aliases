@@ -340,3 +340,7 @@ wtd() {
     git -C "$repo_dir" worktree remove "${wt_base}/${wt_name}" --force
   done
 }
+
+# Remote Mac development
+alias mac="mac-session"
+alias macls="mac-session ls"

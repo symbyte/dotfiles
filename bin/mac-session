@@ -1,0 +1,59 @@
+#!/bin/bash
+# Mac remote session manager using ET + abduco
+
+MAC_USER="steve"
+MAC_HOST="192.168.1.198"
+ET_TERMINAL_PATH="/opt/homebrew/bin/etterminal"
+ABDUCO_PATH="/opt/homebrew/bin/abduco"
+
+usage() {
+    echo "Usage: mac-session [command] [session-name]"
+    echo ""
+    echo "Commands:"
+    echo "  <name>        Attach to session (creates if doesn't exist)"
+    echo "  ls            List active sessions"
+    echo "  kill <name>   Kill a session"
+    echo ""
+    echo "Examples:"
+    echo "  mac-session dev      # Connect to 'dev' session"
+    echo "  mac-session logs     # Connect to 'logs' session"
+    echo "  mac-session ls       # List all sessions"
+    echo "  mac-session kill dev # Kill 'dev' session"
+}
+
+list_sessions() {
+    ssh "${MAC_USER}@${MAC_HOST}" "ls -1 ~/.abduco 2>/dev/null || echo '(no sessions)'"
+}
+
+kill_session() {
+    if [ -z "$1" ]; then
+        echo "Error: session name required"
+        exit 1
+    fi
+    ssh "${MAC_USER}@${MAC_HOST}" "rm -f ~/.abduco/$1"
+    echo "Killed session: $1"
+}
+
+attach_session() {
+    local session_name="${1:-main}"
+    et --terminal-path="$ET_TERMINAL_PATH" "${MAC_USER}@${MAC_HOST}" \
+        -c "${ABDUCO_PATH} -A ${session_name} zsh"
+}
+
+case "${1:-}" in
+    "")
+        usage
+        ;;
+    ls|list)
+        list_sessions
+        ;;
+    kill)
+        kill_session "$2"
+        ;;
+    -h|--help|help)
+        usage
+        ;;
+    *)
+        attach_session "$1"
+        ;;
+esac
