@@ -1,0 +1,208 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.39/schema.json",
+  "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
+  "window_hiding_behaviour": "Cloak",
+  "cross_monitor_move_behaviour": "Insert",
+  "default_workspace_padding": 0,
+  "default_container_padding": 0,
+  "border": true,
+  "border_width": 8,
+  "border_offset": -1,
+  "mouse_follows_focus": true,
+  "resize_delta": 50,
+  "theme": {
+    "palette": "Base16",
+    "name": "Ashes",
+    "unfocused_border": "Base03",
+    "bar_accent": "Base0D"
+  },
+  "monitors": [
+    {
+      "workspaces": [
+        {
+          "name": "1",
+          "layout": "BSP"
+        },
+        {
+          "name": "2",
+          "layout": "BSP"
+        },
+        {
+          "name": "3",
+          "layout": "BSP"
+        },
+        {
+          "name": "4",
+          "layout": "BSP"
+        },
+        {
+          "name": "5",
+          "layout": "BSP"
+        },
+        {
+          "name": "6",
+          "layout": "BSP"
+        },
+        {
+          "name": "7",
+          "layout": "BSP"
+        },
+        {
+          "name": "8",
+          "layout": "BSP"
+        },
+        {
+          "name": "9",
+          "layout": "BSP"
+        },
+        {
+          "name": "B",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "chrome.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "C",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "slack.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "D",
+          "layout": "BSP"
+        },
+        {
+          "name": "E",
+          "layout": "BSP"
+        },
+        {
+          "name": "I",
+          "layout": "BSP"
+        },
+        {
+          "name": "M",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "Zoom.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "N",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "Obsidian.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Notion.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "O",
+          "layout": "BSP"
+        },
+        {
+          "name": "P",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "Figma.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Linear.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "Q",
+          "layout": "BSP"
+        },
+        {
+          "name": "R",
+          "layout": "BSP"
+        },
+        {
+          "name": "S",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "Todoist.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "T",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "ghostty.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "U",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "WaveLink.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "StreamDeck.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "vpnui.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "W",
+          "layout": "BSP"
+        },
+        {
+          "name": "Y",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "Cypress.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
