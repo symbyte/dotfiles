@@ -213,10 +213,18 @@ run = 'move-node-to-workspace T'
 
 [[on-window-detected]]
 if.app-id = 'com.figma.Desktop'
+run = 'move-node-to-workspace D'
+
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome.app.bodcnfabgdanceacgbnfhjepebfamnnb'
 run = 'move-node-to-workspace P'
 
 [[on-window-detected]]
 if.app-id = 'com.google.Chrome'
+run = 'move-node-to-workspace D'
+
+[[on-window-detected]]
+if.app-id = 'app.zen-browser.zen'
 run = 'move-node-to-workspace B'
 
 [[on-window-detected]]
