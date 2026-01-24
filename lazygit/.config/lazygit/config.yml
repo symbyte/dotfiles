@@ -1,5 +1,9 @@
 gui:
   nerdFontsVersion: "3"
+keybinding:
+  branches:
+    fetchRemote: F
+    sortOrder: O
 git:
   pagers:
     - colorArg: always
@@ -10,3 +14,86 @@ git:
     - main
     - dev
   skipHookPrefix: WIP
+customCommands:
+  # Stack Navigation
+  - key: K
+    context: localBranches
+    command: gt up
+    description: Move up the stack (toward trunk)
+  - key: J
+    context: localBranches
+    command: gt down
+    description: Move down the stack (toward leaves)
+  - key: T
+    context: localBranches
+    command: gt trunk
+    description: Jump to trunk/main branch
+  # Branch Creation
+  - key: n
+    context: localBranches
+    command: gt create -am "{{.Form.Message}}"
+    description: Create stacked branch with commit
+    prompts:
+      - type: input
+        title: Commit message
+        key: Message
+  # Sync & Rebase
+  - key: f
+    context: localBranches
+    command: gt sync
+    description: Sync with remote and restack
+    output: log
+  - key: R
+    context: localBranches
+    command: gt restack
+    description: Rebase dependent branches
+    output: log
+  # Submit/Push
+  - key: s
+    context: localBranches
+    command: gt submit
+    description: Submit current branch as PR
+    output: log
+  - key: S
+    context: localBranches
+    command: gt submit --stack
+    description: Submit entire stack as PRs
+    output: log
+  - key: o
+    context: localBranches
+    command: gt pr
+    description: Open PR in browser
+  # Modify & Squash
+  - key: A
+    context: commits
+    command: gt modify
+    description: Amend staged changes and restack
+    output: log
+  - key: A
+    context: files
+    command: gt modify
+    description: Amend staged changes and restack
+    output: log
+  - key: c
+    context: commits
+    command: gt modify -c -m "{{.Form.Message}}"
+    description: Commit with message and restack
+    output: log
+    prompts:
+      - type: input
+        title: Commit message
+        key: Message
+  - key: c
+    context: files
+    command: gt modify -c -m "{{.Form.Message}}"
+    description: Commit with message and restack
+    output: log
+    prompts:
+      - type: input
+        title: Commit message
+        key: Message
+  - key: S
+    context: commits
+    command: gt squash
+    description: Squash commits in current branch
+    output: log
