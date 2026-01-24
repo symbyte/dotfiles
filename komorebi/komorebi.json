@@ -5,7 +5,7 @@
   "cross_monitor_move_behaviour": "Insert",
   "default_workspace_padding": 0,
   "default_container_padding": 0,
-  "border": true,
+  "border": false,
   "border_width": 8,
   "border_offset": -1,
   "mouse_follows_focus": true,
@@ -60,9 +60,9 @@
           "layout": "BSP",
           "initial_workspace_rules": [
             {
-              "kind": "Exe",
-              "id": "chrome.exe",
-              "matching_strategy": "Equals"
+              "kind": "Title",
+              "id": "- Google Chrome",
+              "matching_strategy": "Contains"
             }
           ]
         },
@@ -97,6 +97,56 @@
               "kind": "Exe",
               "id": "Zoom.exe",
               "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Title",
+              "id": "YouTube",
+              "matching_strategy": "Contains"
+            },
+            {
+              "kind": "Title",
+              "id": "Twitch",
+              "matching_strategy": "Contains"
+            },
+            {
+              "kind": "Title",
+              "id": "Netflix",
+              "matching_strategy": "Contains"
+            },
+            {
+              "kind": "Title",
+              "id": "Disney+",
+              "matching_strategy": "Contains"
+            },
+            {
+              "kind": "Title",
+              "id": "Prime Video",
+              "matching_strategy": "Contains"
+            },
+            {
+              "kind": "Title",
+              "id": "Plex",
+              "matching_strategy": "Contains"
+            },
+            {
+              "kind": "Title",
+              "id": "Dropout",
+              "matching_strategy": "Contains"
+            },
+            {
+              "kind": "Exe",
+              "id": "Kodi.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Moonlight.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Title",
+              "id": "Xbox",
+              "matching_strategy": "Contains"
             }
           ]
         },

@@ -371,8 +371,8 @@ SwitchWorkspace(name) {
 ; ============================================
 ; Layout toggles
 ; ============================================
-!/::Komorebic("cycle-layout bsp columns rows vertical-stack horizontal-stack ultrawide-vertical-stack grid")
-!,::Komorebic("toggle-monocle")
+!+^#vkBF::Komorebic("cycle-layout next")  ; vkBF = /
+!+^#,::Komorebic("toggle-monocle")
 
 ; ============================================
 ; Focus windows (Alt+Shift+Ctrl+Win+HJKL)
@@ -405,7 +405,7 @@ SwitchWorkspace(name) {
 ; ============================================
 ; Workspace back and forth (Alt+`)
 ; ============================================
-!`::Komorebic("cycle-workspace previous")
+!+^#`::Komorebic("cycle-workspace previous")
 
 ; ============================================
 ; Move workspace to monitor (Alt+Shift+Ctrl+Win+Tab)
