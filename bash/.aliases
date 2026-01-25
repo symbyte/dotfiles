@@ -1,6 +1,7 @@
 # General
 alias "emacs"='emacsclient -nw -a ""'
 alias "vim"="nvim"
+alias "c"="claude --dangerously-skip-permissions"
 
 mkcd() {
 	mkdir $1 && cd $1
