@@ -344,3 +344,5 @@ wtd() {
 
 # Zellij
 alias z="zellij"
+# Linear
+alias ln="linear-tui"
