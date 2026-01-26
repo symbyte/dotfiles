@@ -1,3 +1,20 @@
+// Custom Tokyo Night theme with blue focus instead of green
+themes {
+    tokyo-night-custom {
+        fg "#a9b1d6"
+        bg "#1a1b26"
+        black "#414868"
+        red "#f7768e"
+        green "#7aa2f7"  // Using blue for focus/highlights
+        yellow "#e0af68"
+        blue "#7aa2f7"
+        magenta "#bb9af7"
+        cyan "#7dcfff"
+        white "#c0caf5"
+        orange "#ff9e64"
+    }
+}
+
 keybinds clear-defaults=true {
     locked {
         bind "Ctrl g" { SwitchToMode "normal"; }
@@ -281,7 +298,7 @@ web_client {
  
 // Choose the theme that is specified in the themes section.
 // Default: default
-theme "tokyo-night"
+theme "tokyo-night-custom"
  
 // Choose the base input mode of zellij.
 // Default: normal
