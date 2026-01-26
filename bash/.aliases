@@ -342,6 +342,5 @@ wtd() {
   done
 }
 
-# Remote Mac development
-alias mac="mac-session"
-alias macls="mac-session ls"
+# Zellij
+alias z="zellij"
