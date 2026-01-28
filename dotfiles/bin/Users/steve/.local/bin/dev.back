@@ -1,0 +1,136 @@
+#!/bin/bash
+# dev - Open a Linear ticket worktree with Claude Code and LazyGit in WezTerm splits
+#
+# This script:
+# 1. Fetches Linear issues and matches them with existing worktrees in ~/projects/wt
+# 2. Presents an fzf picker showing issue number and title
+# 3. Opens the PR in neovim with Octo (left pane)
+# 4. Creates a vertical split with Claude Code (right pane)
+# 5. Creates a horizontal split with LazyGit (bottom right pane)
+
+set -e
+
+WT_DIR="$HOME/projects/wt"
+CACHE_FILE="$HOME/.cache/linear-issues.json"
+CACHE_MAX_AGE=3600  # 1 hour in seconds
+
+# Fetch Linear issues assigned to me
+fetch_linear_issues() {
+    if [[ -z "$LINEAR_API_KEY" ]]; then
+        return 1
+    fi
+
+    curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -H "Authorization: $LINEAR_API_KEY" \
+        -d '{"query": "query { viewer { assignedIssues(first: 100) { nodes { identifier title } } } }"}' \
+        https://api.linear.app/graphql 2>/dev/null
+}
+
+# Get cached or fresh Linear issues
+get_linear_issues_cached() {
+    mkdir -p "$(dirname "$CACHE_FILE")"
+
+    # Check if cache exists and is fresh
+    if [[ -f "$CACHE_FILE" ]]; then
+        local cache_age=$(($(date +%s) - $(stat -f%m "$CACHE_FILE" 2>/dev/null || echo 0)))
+        if [[ $cache_age -lt $CACHE_MAX_AGE ]]; then
+            cat "$CACHE_FILE"
+            return 0
+        fi
+    fi
+
+    # Fetch fresh data
+    local data=$(fetch_linear_issues)
+    if [[ -n "$data" ]] && echo "$data" | jq -e '.data.viewer.assignedIssues.nodes' &>/dev/null; then
+        echo "$data" > "$CACHE_FILE"
+        echo "$data"
+    elif [[ -f "$CACHE_FILE" ]]; then
+        # Use stale cache if fetch failed
+        cat "$CACHE_FILE"
+    fi
+}
+
+# Get worktrees with Linear issue info
+get_worktree_issues() {
+    local worktrees=$(ls -1 "$WT_DIR" 2>/dev/null | grep -E '^[a-z]+-[0-9]+$' | grep -v '^pr-' || true)
+
+    if [[ -z "$worktrees" ]]; then
+        echo "No Linear issue worktrees found in $WT_DIR" >&2
+        exit 1
+    fi
+
+    # Try to get Linear issue data
+    local linear_data=$(get_linear_issues_cached 2>/dev/null || echo "")
+
+    for wt in $worktrees; do
+        local identifier=$(echo "$wt" | tr '[:lower:]' '[:upper:]')
+        local title=""
+
+        # Try to get title from Linear data
+        if [[ -n "$linear_data" ]]; then
+            title=$(echo "$linear_data" | jq -r --arg id "$identifier" \
+                '.data.viewer.assignedIssues.nodes[] | select(.identifier == $id) | .title' 2>/dev/null || echo "")
+        fi
+
+        if [[ -n "$title" ]]; then
+            echo -e "$wt\t$identifier: $title"
+        else
+            echo -e "$wt\t$identifier"
+        fi
+    done
+}
+
+main() {
+    local issues=$(get_worktree_issues)
+
+    if [[ -z "$issues" ]]; then
+        echo "No matching worktrees found" >&2
+        exit 1
+    fi
+
+    # Use fzf to select an issue
+    local selected=$(echo "$issues" | fzf \
+        --delimiter=$'\t' \
+        --with-nth=2 \
+        --preview-window=hidden \
+        --header='Select a Linear issue worktree' \
+        --prompt='Issue: ')
+
+    if [[ -z "$selected" ]]; then
+        exit 0
+    fi
+
+    local wt_name=$(echo "$selected" | cut -f1)
+    local wt_path="$WT_DIR/$wt_name"
+
+    if [[ ! -d "$wt_path" ]]; then
+        echo "Worktree not found: $wt_path" >&2
+        exit 1
+    fi
+
+    # Check if PR exists for this branch
+    local claude_cmd
+    if (cd "$wt_path" && gh pr view --json number &>/dev/null); then
+        # PR exists - resume most recent session
+        claude_cmd="claude --dangerously-skip-permissions --resume"
+    else
+        # No PR - start planning the issue
+        claude_cmd="claude --dangerously-skip-permissions /plan-issue"
+    fi
+
+    # Use current pane as the main pane
+    local main_pane="$WEZTERM_PANE"
+
+    # Create vertical split (right) for Claude Code (drops to shell on exit)
+    local claude_pane=$(wezterm cli split-pane --right --percent 50 --cwd "$wt_path" --pane-id "$main_pane" -- bash -c "$claude_cmd; exec \$SHELL")
+
+    # Create horizontal split (bottom of Claude pane) for LazyGit (drops to shell on exit)
+    wezterm cli split-pane --bottom --percent 40 --cwd "$wt_path" --pane-id "$claude_pane" -- bash -c "lazygit; exec \$SHELL"
+
+    # Replace current shell with nvim in the worktree
+    cd "$wt_path"
+    exec nvim -c 'Octo pr'
+}
+
+main "$@"
