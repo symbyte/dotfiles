@@ -14,8 +14,12 @@ end
 -- Theme (matching Ghostty's TokyoNight)
 config.color_scheme = "Tokyo Night"
 
--- Font
-config.font = wezterm.font("Monaspace Neon")
+-- Font (NF variant on Windows, regular elsewhere)
+if is_windows then
+  config.font = wezterm.font("Monaspace Neon NF")
+else
+  config.font = wezterm.font("Monaspace Neon")
+end
 config.font_size = 11.0
 
 -- Tab title shows current directory name of first pane
@@ -31,33 +35,28 @@ wezterm.on("format-tab-title", function(tab)
 end)
 
 -- Adjust font size based on screen size (larger font for external displays)
--- Uses screen dimensions, not window dimensions, so resizing window doesn't affect font
-local function update_font_for_screen(window)
-  local overrides = window:get_config_overrides() or {}
-  local screens = wezterm.gui.screens()
-  local active_screen = screens.active
-
-  -- Use the active screen's dimensions
-  -- Built-in MacBook display is typically around 1800px wide at effective resolution
-  -- External monitors are usually wider
-  if active_screen.width > 2000 then
-    overrides.font_size = 14.0
-  else
-    overrides.font_size = 11.0
+-- Only on macOS; Windows uses the default font size
+if not is_windows then
+  local function update_font_for_screen(window)
+    local overrides = window:get_config_overrides() or {}
+    local screens = wezterm.gui.screens()
+    local active_screen = screens.active
+    if active_screen.width > 2000 then
+      overrides.font_size = 14.0
+    else
+      overrides.font_size = 11.0
+    end
+    window:set_config_overrides(overrides)
   end
 
-  window:set_config_overrides(overrides)
+  wezterm.on("window-config-reloaded", function(window, pane)
+    update_font_for_screen(window)
+  end)
+
+  wezterm.on("window-resized", function(window, pane)
+    update_font_for_screen(window)
+  end)
 end
-
--- Update font when window is created
-wezterm.on("window-config-reloaded", function(window, pane)
-  update_font_for_screen(window)
-end)
-
--- Update font when window moves to different screen
-wezterm.on("window-resized", function(window, pane)
-  update_font_for_screen(window)
-end)
 
 -- Window appearance
 config.window_decorations = "RESIZE" -- removes title bar but keeps resize handles
@@ -69,13 +68,9 @@ config.window_padding = {
 }
 
 -- Tab bar styling
-config.use_fancy_tab_bar = true
+config.use_fancy_tab_bar = false -- Fancy tab bar breaks hide_tab_bar_if_only_one_tab on Windows
 config.tab_bar_at_bottom = false
 config.hide_tab_bar_if_only_one_tab = true
-config.window_frame = {
-  font = wezterm.font("Monaspace Neon"),
-  font_size = 14.0,
-}
 
 -- macOS specific
 config.macos_window_background_blur = 0
