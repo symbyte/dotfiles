@@ -213,6 +213,11 @@
               "kind": "Exe",
               "id": "ghostty.exe",
               "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "wezterm-gui.exe",
+              "matching_strategy": "Equals"
             }
           ]
         },

@@ -3,6 +3,14 @@ local act = wezterm.action
 
 local config = wezterm.config_builder()
 
+-- Platform detection
+local is_windows = wezterm.target_triple:find("windows") ~= nil
+
+-- Set WSL as default on Windows
+if is_windows then
+  config.default_domain = "WSL:Ubuntu-24.04"
+end
+
 -- Theme (matching Ghostty's TokyoNight)
 config.color_scheme = "Tokyo Night"
 
@@ -85,6 +93,9 @@ config.audible_bell = "Disabled"
 config.window_close_confirmation = "NeverPrompt"
 
 -- Keybindings matching Ghostty config
+-- Use SUPER (Win key) on Windows, CMD on macOS
+local mod = is_windows and "SUPER" or "CMD"
+
 config.keys = {
   -- Split navigation (ctrl+shift+h/j/k/l)
   { key = "h", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Left") },
@@ -99,18 +110,18 @@ config.keys = {
   { key = "Enter", mods = "SHIFT", action = act.SendString("\x1b\r") },
 
   -- Split panes
-  { key = "d", mods = "CMD", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-  { key = "d", mods = "CMD|SHIFT", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+  { key = "d", mods = mod, action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+  { key = "d", mods = mod .. "|SHIFT", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 
   -- Close pane
-  { key = "w", mods = "CMD", action = act.CloseCurrentPane({ confirm = false }) },
+  { key = "w", mods = mod, action = act.CloseCurrentPane({ confirm = false }) },
 
   -- New tab in current directory
-  { key = "t", mods = "CMD", action = act.SpawnCommandInNewTab({ cwd = wezterm.home_dir }) },
+  { key = "t", mods = mod, action = act.SpawnCommandInNewTab({ cwd = wezterm.home_dir }) },
 
   -- Tab navigation
-  { key = "[", mods = "CMD|SHIFT", action = act.ActivateTabRelative(-1) },
-  { key = "]", mods = "CMD|SHIFT", action = act.ActivateTabRelative(1) },
+  { key = "[", mods = mod .. "|SHIFT", action = act.ActivateTabRelative(-1) },
+  { key = "]", mods = mod .. "|SHIFT", action = act.ActivateTabRelative(1) },
 
   -- Quick select mode (like copy mode)
   { key = "Space", mods = "CTRL|SHIFT", action = act.QuickSelect },
