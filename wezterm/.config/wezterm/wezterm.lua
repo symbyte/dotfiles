@@ -120,6 +120,12 @@ config.keys = {
 
   -- Quick select mode (like copy mode)
   { key = "Space", mods = "CTRL|SHIFT", action = act.QuickSelect },
+
+  -- Ctrl+V paste (for Windows compatibility)
+  { key = "v", mods = "CTRL", action = act.PasteFrom("Clipboard") },
+
+  -- Disable Alt+Space system menu so it passes through to terminal
+  { key = "Space", mods = "ALT", action = act.DisableDefaultAssignment },
 }
 
 -- Mouse bindings
