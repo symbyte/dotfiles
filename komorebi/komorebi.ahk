@@ -131,11 +131,6 @@ SwitchWorkspace(name) {
 ; #Space - EXCEPTION: kept for input language switching
 
 ; ============================================
-; Block Alt+Space (system menu) so terminals can use it
-; ============================================
-!Space::return
-
-; ============================================
 ; Block Win+Shift combinations
 ; ============================================
 #+a::return
