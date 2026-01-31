@@ -1,3 +1,6 @@
 pgcli/.config/pgcli/log
+pgcli/.config/pgcli/history
 **/.claude/
+!claude/.claude/
+**/node_modules/
 **/*.tar.gz
