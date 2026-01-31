@@ -1,0 +1,178 @@
+#!/bin/bash
+# ds - Delete a Zellij session and its associated worktree (if any)
+#
+# This script:
+# 1. Lists all Zellij sessions via fzf
+# 2. Deletes the selected session (force kills if active)
+# 3. Safely removes the corresponding worktree if it exists
+#    (warns if there are uncommitted changes)
+
+set -e
+
+REPO_DIR="$HOME/projects/apricot"
+ZELLIJ_CACHE="$HOME/Library/Caches/org.Zellij-Contributors.Zellij"
+
+# Find worktree info for a given session name (checks directory name)
+# Returns: path<TAB>branch or empty if not found
+find_worktree_info() {
+    local session_name="$1"
+    local wt_path=""
+    local wt_branch=""
+
+    while read -r line; do
+        if [[ "$line" == "worktree "* ]]; then
+            wt_path="${line#worktree }"
+            wt_branch=""
+        elif [[ "$line" == "branch "* ]]; then
+            wt_branch="${line#branch refs/heads/}"
+        elif [[ -z "$line" && -n "$wt_path" ]]; then
+            # End of worktree entry - check if it matches
+            local wt_dirname=$(basename "$wt_path")
+            if [[ "$wt_dirname" == "$session_name" ]]; then
+                echo -e "$wt_path\t$wt_branch"
+                return
+            fi
+            wt_path=""
+            wt_branch=""
+        fi
+    done < <(git -C "$REPO_DIR" worktree list --porcelain 2>/dev/null; echo "")
+}
+
+# Get list of zellij sessions
+get_sessions() {
+    zellij list-sessions 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | while read -r line; do
+        # Session name is everything before " [Created"
+        local name=$(echo "$line" | sed 's/ \[Created.*//')
+        local status=""
+        if echo "$line" | grep -q "EXITED"; then
+            status=" (exited)"
+        elif echo "$line" | grep -q "current"; then
+            status=" (current)"
+        fi
+        echo -e "$name\t$name$status"
+    done
+}
+
+# Check if worktree has uncommitted changes
+has_uncommitted_changes() {
+    local wt_path="$1"
+    [[ -n "$(git -C "$wt_path" status --porcelain 2>/dev/null)" ]]
+}
+
+# Check if worktree has unpushed commits
+has_unpushed_commits() {
+    local wt_path="$1"
+    local upstream=$(git -C "$wt_path" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null || echo "")
+    if [[ -n "$upstream" ]]; then
+        [[ -n "$(git -C "$wt_path" log "$upstream"..HEAD --oneline 2>/dev/null)" ]]
+    else
+        # No upstream - check if there are any commits not on origin/staging
+        [[ -n "$(git -C "$wt_path" log origin/staging..HEAD --oneline 2>/dev/null)" ]]
+    fi
+}
+
+# Global flag for skipping warnings (set by delete_session when user chooses 'a')
+SKIP_WARNINGS="no"
+
+# Delete a single session and its worktree
+# Returns 1 if skipped (e.g., current session), 0 otherwise
+# Sets SKIP_WARNINGS="yes" if user chooses 'a' for all
+delete_session() {
+    local session_name="$1"
+
+    local wt_info=$(find_worktree_info "$session_name")
+    local wt_path=$(echo "$wt_info" | cut -f1)
+    local wt_branch=$(echo "$wt_info" | cut -f2)
+
+    # Check if this is the current session
+    if zellij list-sessions 2>/dev/null | grep "$session_name" | grep -q "current"; then
+        echo "Skipping '$session_name' (current session)"
+        return 1
+    fi
+
+    # Check for worktree safety
+    if [[ -n "$wt_path" && -d "$wt_path" && "$SKIP_WARNINGS" != "yes" ]]; then
+        local warnings=""
+
+        if has_uncommitted_changes "$wt_path"; then
+            warnings+="  - Has uncommitted changes\n"
+        fi
+
+        if has_unpushed_commits "$wt_path"; then
+            warnings+="  - Has unpushed commits\n"
+        fi
+
+        if [[ -n "$warnings" ]]; then
+            echo "Warning for worktree '$session_name':"
+            echo -e "$warnings"
+            read -p "Delete anyway? (y/N/a=all) " -n 1 -r < /dev/tty
+            echo
+            if [[ $REPLY =~ ^[Aa]$ ]]; then
+                SKIP_WARNINGS="yes"
+            elif [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Skipping '$session_name'"
+                return 1
+            fi
+        fi
+    fi
+
+    # Kill the zellij server process if still running
+    local server_pid=$(pgrep -f "zellij --server.*/$session_name\$" 2>/dev/null)
+    if [[ -n "$server_pid" ]]; then
+        echo "Killing zellij server process (PID $server_pid)..."
+        kill -9 "$server_pid" 2>/dev/null || true
+        sleep 0.5
+    fi
+
+    # Delete the Zellij session
+    echo "Deleting Zellij session '$session_name'..."
+    zellij delete-session --force "$session_name" 2>/dev/null || true
+
+    # Remove session cache data
+    find "$ZELLIJ_CACHE" -path "*/session_info/$session_name" -type d -exec rm -rf {} + 2>/dev/null || true
+
+    # Remove the worktree if it exists
+    if [[ -n "$wt_path" && -d "$wt_path" ]]; then
+        echo "Removing worktree at '$wt_path'..."
+        git -C "$REPO_DIR" worktree remove "$wt_path" --force
+
+        # Also delete the branch if it exists
+        if [[ -n "$wt_branch" ]]; then
+            local branch_exists=$(git -C "$REPO_DIR" branch --list "$wt_branch")
+            if [[ -n "$branch_exists" ]]; then
+                echo "Deleting branch '$wt_branch'..."
+                git -C "$REPO_DIR" branch -D "$wt_branch" 2>/dev/null || true
+            fi
+        fi
+    fi
+
+    return 0
+}
+
+main() {
+    local sessions=$(get_sessions)
+
+    if [[ -z "$sessions" ]]; then
+        echo "No Zellij sessions found" >&2
+        exit 0
+    fi
+
+    local selected=$(echo "$sessions" | fzf \
+        --multi \
+        --delimiter=$'\t' \
+        --with-nth=2 \
+        --preview-window=hidden \
+        --header='Select sessions to delete (TAB to multi-select)' \
+        --prompt='Delete: ')
+
+    [[ -z "$selected" ]] && exit 0
+
+    while IFS= read -r line; do
+        local session_name=$(echo "$line" | cut -f1)
+        delete_session "$session_name" || true
+    done <<< "$selected"
+
+    echo "Done."
+}
+
+main "$@"

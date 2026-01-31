@@ -1,0 +1,17 @@
+#!/bin/bash
+# dev-nvim - Wrapper for nvim in the dev zellij layout
+#
+# Ensures the worktree exists for the session, then launches nvim.
+# Triggers pnpm setup via overseer if node_modules is missing.
+
+# Ensure worktree exists and get the path
+source ~/.local/bin/dev-ensure-worktree
+dev_setup_worktree
+
+cd "$DEV_WORKTREE_PATH" || exit 1
+
+if [[ "$NEEDS_PNPM_SETUP" == "1" ]]; then
+    exec nvim -c "lua require('overseer').new_task({ name = 'pnpm setup', cmd = 'pnpm', args = { 'run', 'setup' } }):start()" -c "OverseerOpen" "$@"
+else
+    exec nvim "$@"
+fi

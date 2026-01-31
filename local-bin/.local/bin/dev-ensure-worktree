@@ -1,0 +1,73 @@
+#!/bin/bash
+# dev-ensure-worktree - Ensure a worktree exists for the current Zellij session
+#
+# Sources this script to get DEV_WORKTREE_PATH set, or call it to get the path.
+# Creates a worktree from staging if one doesn't exist for the session name.
+
+WT_DIR="$HOME/projects/wt"
+REPO_DIR="$HOME/projects/apricot"
+
+# Get session name from Zellij env var
+get_session_name() {
+    echo "${ZELLIJ_SESSION_NAME:-}"
+}
+
+# Create a worktree if it doesn't exist
+ensure_worktree() {
+    local session_name="$1"
+    local wt_path="$WT_DIR/$session_name"
+
+    if [[ -z "$session_name" ]]; then
+        return 1
+    fi
+
+    if [[ -d "$wt_path" ]]; then
+        echo "$wt_path"
+        return 0
+    fi
+
+    # Create worktree from staging
+    git -C "$REPO_DIR" fetch --prune --quiet 2>/dev/null || true
+    git -C "$REPO_DIR" worktree add -b "$session_name" "$wt_path" origin/staging 2>/dev/null
+
+    if [[ -d "$wt_path" ]]; then
+        echo "$wt_path"
+        return 0
+    fi
+
+    return 1
+}
+
+# Main: ensure worktree and export path
+dev_setup_worktree() {
+    local session_name=$(get_session_name)
+
+    if [[ -z "$session_name" ]]; then
+        # Not in a Zellij session, use current directory
+        export DEV_WORKTREE_PATH="$PWD"
+        return 0
+    fi
+
+    local wt_path=$(ensure_worktree "$session_name")
+
+    if [[ -n "$wt_path" && -d "$wt_path" ]]; then
+        export DEV_WORKTREE_PATH="$wt_path"
+
+        # Check if node_modules is missing for NEEDS_PNPM_SETUP
+        if [[ ! -d "$wt_path/node_modules" ]]; then
+            export NEEDS_PNPM_SETUP=1
+        fi
+
+        return 0
+    fi
+
+    # Fallback to current directory
+    export DEV_WORKTREE_PATH="$PWD"
+    return 1
+}
+
+# If script is executed (not sourced), run setup and print path
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    dev_setup_worktree
+    echo "$DEV_WORKTREE_PATH"
+fi

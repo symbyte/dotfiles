@@ -1,0 +1,278 @@
+#!/bin/bash
+# claude-monitor-detail - Drill-down view for a single Claude session
+#
+# Shows session metadata, task list, and recent messages.
+# Starts with fzf picker, then enters auto-refresh loop.
+# Press q to return to picker.
+
+set -euo pipefail
+
+CLAUDE_DIR="$HOME/.claude"
+PROJECTS_DIR="$CLAUDE_DIR/projects"
+TASKS_DIR="$CLAUDE_DIR/tasks"
+WT_DIR="$HOME/projects/wt"
+REFRESH_INTERVAL=3
+
+# Colors
+reset="\033[0m"
+bold="\033[1m"
+dim="\033[2m"
+green="\033[32m"
+bright_green="\033[1;32m"
+yellow="\033[33m"
+cyan="\033[36m"
+dim_white="\033[2;37m"
+
+encode_path() {
+    echo "$1" | sed 's|^/||; s|/|-|g; s|^|-|'
+}
+
+# Build a list of sessions for fzf: "label\tindex_file"
+build_session_list() {
+    local entries=()
+
+    # Zellij sessions with worktrees
+    while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        [[ "$line" == *"EXITED"* ]] && continue
+        [[ "$line" == *"(current)"* ]] && continue
+        local name
+        name=$(echo "$line" | sed 's/ \[Created.*//')
+        local wt_path="$WT_DIR/$name"
+        local encoded
+        encoded=$(encode_path "$wt_path")
+        local index_file="$PROJECTS_DIR/$encoded/sessions-index.json"
+        if [[ -f "$index_file" ]]; then
+            entries+=("$name"$'\t'"$index_file")
+        fi
+    done < <(zellij list-sessions --no-formatting 2>/dev/null)
+
+    # Other Claude project sessions (recently active)
+    local now
+    now=$(date +%s)
+    local one_hour_ago=$(( now - 3600 ))
+
+    while IFS= read -r index_file; do
+        [[ -z "$index_file" ]] && continue
+        # Skip worktree projects already listed
+        local skip=false
+        for entry in "${entries[@]+"${entries[@]}"}"; do
+            local entry_file
+            entry_file=$(echo "$entry" | cut -f2)
+            [[ "$index_file" == "$entry_file" ]] && { skip=true; break; }
+        done
+        $skip && continue
+
+        # Check for recent activity
+        local jsonl_path
+        jsonl_path=$(jq -r '.entries | sort_by(.modified) | last // empty | .fullPath // empty' "$index_file" 2>/dev/null)
+        [[ -f "$jsonl_path" ]] || continue
+        local mtime
+        mtime=$(stat -f "%m" "$jsonl_path" 2>/dev/null || echo 0)
+        (( mtime < one_hour_ago )) && continue
+
+        local label
+        label=$(jq -r '.originalPath // empty' "$index_file" 2>/dev/null | xargs basename 2>/dev/null)
+        [[ -z "$label" ]] && label=$(basename "$(dirname "$index_file")")
+        entries+=("$label"$'\t'"$index_file")
+    done < <(find "$PROJECTS_DIR" -name sessions-index.json -maxdepth 2 2>/dev/null)
+
+    for entry in "${entries[@]+"${entries[@]}"}"; do
+        echo "$entry"
+    done
+}
+
+# Render detail view for a session
+render_detail() {
+    local index_file="$1"
+    local now
+    now=$(date +%s)
+    local cols
+    cols=$(tput cols 2>/dev/null || echo 120)
+
+    # Get most recent session from index
+    local session_data
+    session_data=$(jq -r '
+        .entries | sort_by(.modified) | last // empty |
+        [.sessionId, .summary, (.messageCount|tostring), .gitBranch, .fullPath, .created, .modified] |
+        @tsv
+    ' "$index_file" 2>/dev/null)
+
+    if [[ -z "$session_data" ]]; then
+        echo " No session data available."
+        return
+    fi
+
+    local session_id summary msg_count git_branch jsonl_path created modified
+    IFS=$'\t' read -r session_id summary msg_count git_branch jsonl_path created modified <<< "$session_data"
+
+    local project_path
+    project_path=$(jq -r '.originalPath // "unknown"' "$index_file" 2>/dev/null)
+
+    # Activity age
+    local status_label="unknown"
+    local age_str=""
+    if [[ -f "$jsonl_path" ]]; then
+        local mtime
+        mtime=$(stat -f "%m" "$jsonl_path" 2>/dev/null || echo 0)
+        local age=$(( now - mtime ))
+        if (( age < 60 )); then
+            status_label="${bright_green}ACTIVE${reset}"
+            age_str="${age}s ago"
+        elif (( age < 120 )); then
+            status_label="${bright_green}ACTIVE${reset}"
+            age_str="$(( age / 60 ))m ago"
+        elif (( age < 600 )); then
+            status_label="${yellow}RECENT${reset}"
+            age_str="$(( age / 60 ))m ago"
+        elif (( age < 3600 )); then
+            status_label="${dim}IDLE${reset}"
+            age_str="$(( age / 60 ))m ago"
+        else
+            status_label="${dim}IDLE${reset}"
+            age_str="$(( age / 3600 ))h ago"
+        fi
+    fi
+
+    # Header
+    local date_str
+    date_str=$(date "+%H:%M:%S")
+    printf "${bold}${cyan} Session Detail${reset}  ${dim}%s${reset}\n" "$date_str"
+    printf " %0.s=" $(seq 1 $(( cols - 2 )))
+    echo
+    echo
+
+    # Metadata
+    printf " ${bold}Summary:${reset}  %s\n" "$summary"
+    printf " ${bold}Project:${reset}  %s\n" "$project_path"
+    [[ -n "$git_branch" && "$git_branch" != "null" ]] && printf " ${bold}Branch:${reset}   %s\n" "$git_branch"
+    printf " ${bold}Messages:${reset} %s\n" "$msg_count"
+    printf " ${bold}Status:${reset}   %b  ${dim}(%s)${reset}\n" "$status_label" "$age_str"
+    printf " ${bold}Session:${reset}  ${dim}%s${reset}\n" "$session_id"
+    echo
+
+    # Tasks
+    local task_dir="$TASKS_DIR/$session_id"
+    if [[ -d "$task_dir" ]]; then
+        local has_tasks=false
+        for f in "$task_dir"/*.json; do
+            [[ -f "$f" ]] && { has_tasks=true; break; }
+        done
+
+        if $has_tasks; then
+            printf " ${bold}Tasks${reset}\n"
+            printf " %0.s-" $(seq 1 $(( cols - 2 )))
+            echo
+            for f in "$task_dir"/*.json; do
+                [[ -f "$f" ]] || continue
+                local task_status task_subject
+                task_status=$(jq -r '.status // "unknown"' "$f" 2>/dev/null)
+                task_subject=$(jq -r '.subject // "untitled"' "$f" 2>/dev/null)
+                local icon
+                case "$task_status" in
+                    completed)   icon="${green}[x]${reset}" ;;
+                    in_progress) icon="${yellow}[>]${reset}" ;;
+                    pending)     icon="[ ]" ;;
+                    *)           icon="[?]" ;;
+                esac
+                printf " %b %s\n" "$icon" "$task_subject"
+            done
+            echo
+        fi
+    fi
+
+    # Recent messages from JSONL
+    printf " ${bold}Recent Activity${reset}\n"
+    printf " %0.s-" $(seq 1 $(( cols - 2 )))
+    echo
+
+    if [[ -f "$jsonl_path" ]]; then
+        local messages
+        messages=$(tail -100 "$jsonl_path" 2>/dev/null | jq -r '
+            if .type == "human" then
+                .message.content | if type == "string" then ">>> " + (. | split("\n") | first)
+                elif type == "array" then
+                    .[] | select(.type == "text") | ">>> " + (.text | split("\n") | first)
+                else empty end
+            elif .type == "assistant" then
+                .message.content[]? |
+                if .type == "text" and (.text | length) > 0 and .text != "(no content)" then
+                    "  " + (.text | split("\n") | first)
+                elif .type == "tool_use" then
+                    "  " + "\u001b[2m" + "Tool: " + .name + "\u001b[0m"
+                else empty end
+            else empty end
+        ' 2>/dev/null | tail -15)
+
+        if [[ -n "$messages" ]]; then
+            while IFS= read -r msg; do
+                local truncated
+                truncated="${msg:0:$((cols - 3))}"
+                printf " %b\n" "$truncated"
+            done <<< "$messages"
+        else
+            printf " ${dim}(no recent messages)${reset}\n"
+        fi
+    else
+        printf " ${dim}(JSONL file not found)${reset}\n"
+    fi
+
+    echo
+    printf " %0.s-" $(seq 1 $(( cols - 2 )))
+    echo
+    printf " ${dim}Refresh: ${REFRESH_INTERVAL}s | Press q to pick another session | Alt+↑ for overview${reset}\n"
+}
+
+# Main loop
+main() {
+    while true; do
+        # Build session list and present fzf picker
+        local session_list
+        session_list=$(build_session_list)
+
+        if [[ -z "$session_list" ]]; then
+            clear
+            echo " No active Claude sessions found."
+            echo " Waiting for sessions..."
+            sleep 5
+            continue
+        fi
+
+        local labels
+        labels=$(echo "$session_list" | cut -f1)
+
+        clear
+        local choice
+        choice=$(echo "$labels" | fzf --prompt="Select session > " --height=40% --reverse --no-info 2>/dev/null) || {
+            # fzf cancelled (ESC or ctrl-c)
+            exit 0
+        }
+
+        [[ -z "$choice" ]] && continue
+
+        # Find the matching index file
+        local index_file
+        index_file=$(echo "$session_list" | grep "^${choice}"$'\t' | head -1 | cut -f2)
+        [[ -z "$index_file" ]] && continue
+
+        # Enter auto-refresh detail view
+        tput civis 2>/dev/null  # hide cursor
+        trap 'tput cnorm 2>/dev/null' RETURN
+
+        while true; do
+            tput cup 0 0 2>/dev/null
+            render_detail "$index_file"
+            tput ed 2>/dev/null
+
+            # Non-blocking read for 'q' key
+            if read -t "$REFRESH_INTERVAL" -n 1 key 2>/dev/null; then
+                if [[ "$key" == "q" || "$key" == "Q" ]]; then
+                    tput cnorm 2>/dev/null
+                    break
+                fi
+            fi
+        done
+    done
+}
+
+main

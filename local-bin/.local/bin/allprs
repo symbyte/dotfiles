@@ -1,0 +1,267 @@
+#!/bin/bash
+# allprs - Open all PR worktrees in Zellij tabs with change summary
+#
+# Creates a "all-prs" session with:
+# - First tab: summary of changes since last check
+# - Subsequent tabs: one per open PR, running nvim with Octo
+
+set -e
+
+WT_DIR="$HOME/projects/wt"
+CACHE_DIR="$HOME/.cache/allprs"
+LAYOUT_DIR="$HOME/.config/zellij/layouts"
+SESSION_NAME="all-prs"
+ZELLIJ_CACHE="$HOME/Library/Caches/org.Zellij-Contributors.Zellij"
+
+mkdir -p "$CACHE_DIR"
+
+# Clear existing session completely
+clear_session() {
+    local session_name="$1"
+
+    # Kill the zellij server process if still running
+    local server_pid=$(pgrep -f "zellij --server.*/$session_name\$" 2>/dev/null)
+    if [[ -n "$server_pid" ]]; then
+        echo "Killing zellij server process (PID $server_pid)..."
+        kill -9 "$server_pid" 2>/dev/null || true
+        sleep 0.5
+    fi
+
+    # Delete the Zellij session
+    zellij delete-session --force "$session_name" 2>/dev/null || true
+
+    # Remove session cache data
+    find "$ZELLIJ_CACHE" -path "*/session_info/$session_name" -type d -exec rm -rf {} + 2>/dev/null || true
+}
+
+# Generate PR summary and collect open PRs
+generate_summary() {
+    local summary_file="$CACHE_DIR/summary.txt"
+    local state_file="$CACHE_DIR/current_state.json"
+    local open_prs=()
+
+    echo "PR Review Summary" > "$summary_file"
+    echo "════════════════════════════════════════════════════════════" >> "$summary_file"
+    echo "" >> "$summary_file"
+
+    local has_changes=false
+
+    for dir in "$WT_DIR"/pr-*; do
+        [[ ! -d "$dir" ]] && continue
+
+        local pr_num=$(basename "$dir" | sed 's/pr-//')
+        local cache_file="$CACHE_DIR/pr-$pr_num.json"
+
+        # Get current PR state
+        (cd "$dir" && gh pr view "$pr_num" --json number,title,author,commits,comments,reviews,statusCheckRollup,isDraft,state 2>/dev/null) > "$state_file" || continue
+        [[ ! -s "$state_file" ]] && continue
+
+        # Check if PR is still open
+        local pr_state=$(jq -r '.state' "$state_file")
+        [[ "$pr_state" != "OPEN" ]] && continue
+
+        # Add to open PRs list
+        open_prs+=("$pr_num:$dir")
+
+        local title=$(jq -r '.title' "$state_file")
+        local author=$(jq -r '.author.login' "$state_file")
+        local commit_count=$(jq '.commits | length' "$state_file")
+        local latest_commit=$(jq -r '.commits[-1].oid // "none"' "$state_file")
+        local is_draft=$(jq -r '.isDraft' "$state_file")
+        local ci_status=$(jq -r '
+          .statusCheckRollup |
+          if length == 0 then "pending"
+          elif all(.state == "SUCCESS" or .state == "NEUTRAL" or .state == "SKIPPED") then "pass"
+          elif any(.state == "FAILURE" or .state == "ERROR") then "fail"
+          else "pending" end' "$state_file")
+
+        local comment_ids=$(jq -r '[.comments[].id] | sort | join(",")' "$state_file")
+        local review_ids=$(jq -r '[.reviews[].id] | sort | join(",")' "$state_file")
+
+        # Compare to cached state
+        local changes=()
+        local new_conversations=()
+
+        if [[ -f "$cache_file" ]]; then
+            local old_commit_count=$(jq -r '.commit_count // 0' "$cache_file")
+            local old_latest_commit=$(jq -r '.latest_commit // "none"' "$cache_file")
+            local old_ci_status=$(jq -r '.ci_status // "unknown"' "$cache_file")
+            local old_is_draft=$(jq -r '.is_draft // "unknown"' "$cache_file")
+            local old_comment_ids=$(jq -r '.comment_ids // ""' "$cache_file")
+            local old_review_ids=$(jq -r '.review_ids // ""' "$cache_file")
+
+            if [[ "$latest_commit" != "$old_latest_commit" ]]; then
+                local new_commit_count=$(( commit_count - old_commit_count ))
+                [[ $new_commit_count -gt 0 ]] && changes+=("$new_commit_count new commit(s)")
+            fi
+
+            [[ "$ci_status" != "$old_ci_status" ]] && changes+=("CI: $old_ci_status → $ci_status")
+            [[ "$is_draft" != "$old_is_draft" ]] && changes+=("draft: $old_is_draft → $is_draft")
+
+            # Find new comments
+            if [[ "$comment_ids" != "$old_comment_ids" ]]; then
+                IFS=',' read -ra old_ids_array <<< "$old_comment_ids"
+                while IFS=$'\t' read -r cid cauthor cbody; do
+                    [[ -z "$cid" ]] && continue
+                    local found=false
+                    for old_id in "${old_ids_array[@]}"; do
+                        [[ "$cid" == "$old_id" ]] && found=true && break
+                    done
+                    [[ "$found" == false ]] && new_conversations+=("💬 $cauthor: $cbody")
+                done <<< "$(jq -r '.comments[] | [.id, .author.login, (.body | gsub("\n"; " ") | gsub("\r"; "") | .[0:60] + (if length > 60 then "..." else "" end))] | @tsv' "$state_file")"
+            fi
+
+            # Find new reviews
+            if [[ "$review_ids" != "$old_review_ids" ]]; then
+                IFS=',' read -ra old_review_array <<< "$old_review_ids"
+                while IFS=$'\t' read -r rid rauthor rstate rbody; do
+                    [[ -z "$rid" ]] && continue
+                    local found=false
+                    for old_id in "${old_review_array[@]}"; do
+                        [[ "$rid" == "$old_id" ]] && found=true && break
+                    done
+                    if [[ "$found" == false ]]; then
+                        local review_icon="📝"
+                        [[ "$rstate" == "APPROVED" ]] && review_icon="✅"
+                        [[ "$rstate" == "CHANGES_REQUESTED" ]] && review_icon="🔄"
+                        [[ "$rstate" == "COMMENTED" ]] && review_icon="💭"
+                        if [[ -n "$rbody" ]]; then
+                            new_conversations+=("$review_icon $rauthor ($rstate): $rbody")
+                        else
+                            new_conversations+=("$review_icon $rauthor: $rstate")
+                        fi
+                    fi
+                done <<< "$(jq -r '.reviews[] | [.id, .author.login, .state, ((.body // "") | gsub("\n"; " ") | gsub("\r"; "") | .[0:60] + (if length > 60 then "..." else "" end))] | @tsv' "$state_file")"
+            fi
+        else
+            changes+=("first time seeing this PR")
+        fi
+
+        # Write changes to summary
+        if [[ ${#changes[@]} -gt 0 || ${#new_conversations[@]} -gt 0 ]]; then
+            has_changes=true
+            echo "━━━ #$pr_num: $title [$author] ━━━" >> "$summary_file"
+            for change in "${changes[@]}"; do
+                echo "  • $change" >> "$summary_file"
+            done
+            for conv in "${new_conversations[@]}"; do
+                echo "  $conv" >> "$summary_file"
+            done
+            echo "" >> "$summary_file"
+        fi
+
+        # Update cache
+        cat > "$cache_file" <<EOF
+{
+  "pr_num": $pr_num,
+  "commit_count": $commit_count,
+  "latest_commit": "$latest_commit",
+  "ci_status": "$ci_status",
+  "is_draft": "$is_draft",
+  "comment_ids": "$comment_ids",
+  "review_ids": "$review_ids",
+  "last_checked": "$(date -Iseconds)"
+}
+EOF
+    done
+
+    [[ "$has_changes" == false ]] && echo "No changes since last check." >> "$summary_file"
+
+    echo "" >> "$summary_file"
+    echo "Last checked: $(date '+%Y-%m-%d %H:%M')" >> "$summary_file"
+
+    rm -f "$state_file"
+
+    # Output open PRs for the caller
+    printf '%s\n' "${open_prs[@]}"
+}
+
+# Generate dynamic Zellij layout
+generate_layout() {
+    local layout_file="$CACHE_DIR/all-prs.kdl"
+    local summary_file="$CACHE_DIR/summary.txt"
+
+    cat > "$layout_file" <<'HEADER'
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="compact-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="status-bar"
+        }
+    }
+
+    tab name="summary" focus=true {
+        pane command="less" {
+HEADER
+
+    echo "            args \"-R\" \"$summary_file\"" >> "$layout_file"
+
+    cat >> "$layout_file" <<'MIDDLE'
+        }
+    }
+MIDDLE
+
+    # Add a tab for each open PR
+    while IFS=':' read -r pr_num pr_dir; do
+        [[ -z "$pr_num" ]] && continue
+        cat >> "$layout_file" <<EOF
+
+    tab name="pr-$pr_num" cwd="$pr_dir" {
+        pane stacked=true {
+            pane name="nvim" command="nvim" {
+                args "-c" "Octo pr"
+            }
+            pane name="claude" command="review-claude"
+        }
+    }
+EOF
+    done
+
+    cat >> "$layout_file" <<'FOOTER'
+}
+FOOTER
+
+    echo "$layout_file"
+}
+
+# Check if session exists
+session_exists() {
+    zellij list-sessions 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep -q "^${1} "
+}
+
+main() {
+    local pr_dirs=$(ls -d "$WT_DIR"/pr-* 2>/dev/null)
+    [[ -z "$pr_dirs" ]] && echo "No pr-* worktrees found" && return 1
+
+    # Clear existing session if it exists
+    if session_exists "$SESSION_NAME"; then
+        echo "Clearing existing session '$SESSION_NAME'..."
+        clear_session "$SESSION_NAME"
+    fi
+
+    echo "Gathering PR information..."
+    local open_prs=$(generate_summary)
+
+    # Print summary to terminal
+    cat "$CACHE_DIR/summary.txt"
+
+    if [[ -z "$open_prs" ]]; then
+        echo "No open PRs found"
+        return 0
+    fi
+
+    echo ""
+    echo "Generating layout..."
+    local layout_file=$(echo "$open_prs" | generate_layout)
+
+    echo "Starting Zellij session '$SESSION_NAME'..."
+
+    # Start Zellij with the generated layout
+    # -n creates new session with layout, -s names it
+    zellij -n "$layout_file" -s "$SESSION_NAME"
+}
+
+main "$@"

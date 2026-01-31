@@ -1,0 +1,3 @@
+#!/bin/bash
+# Helper script for review layout - runs /review on the PR
+exec claude --dangerously-skip-permissions /review

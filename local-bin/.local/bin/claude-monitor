@@ -1,0 +1,355 @@
+#!/bin/bash
+# claude-monitor - Live dashboard of Claude Code agents across Zellij sessions
+#
+# Shows status of all active Zellij sessions correlated with Claude session data,
+# plus any other recently-active Claude sessions from non-worktree projects.
+
+set -euo pipefail
+
+CLAUDE_DIR="$HOME/.claude"
+PROJECTS_DIR="$CLAUDE_DIR/projects"
+TASKS_DIR="$CLAUDE_DIR/tasks"
+WT_DIR="$HOME/projects/wt"
+REFRESH_INTERVAL=5
+
+# Colors
+reset="\033[0m"
+bold="\033[1m"
+dim="\033[2m"
+green="\033[32m"
+bright_green="\033[1;32m"
+yellow="\033[33m"
+cyan="\033[36m"
+white="\033[37m"
+dim_white="\033[2;37m"
+
+# Encode a filesystem path to Claude's directory name format
+# /Users/steve/projects/wt/foo -> -Users-steve-projects-wt-foo
+encode_path() {
+    echo "$1" | sed 's|^/||; s|/|-|g; s|^|-|'
+}
+
+# Get activity status symbol and label based on mtime age in seconds
+activity_status() {
+    local age="$1"
+    if (( age < 120 )); then
+        printf "${bright_green}● act${reset}"
+    elif (( age < 600 )); then
+        printf "${yellow}◐ rec${reset}"
+    else
+        printf "${dim}○ idle${reset}"
+    fi
+}
+
+# Extract last meaningful action from JSONL (last ~30 lines)
+last_action() {
+    local jsonl="$1"
+    local max_chars="$2"
+    [[ -f "$jsonl" ]] || return
+    tail -30 "$jsonl" 2>/dev/null | jq -r '
+        select(.type == "assistant") | .message.content[]? |
+        if .type == "text" and (.text | length) > 0 and .text != "(no content)" then .text
+        elif .type == "tool_use" then "Using: " + .name
+        else empty end
+    ' 2>/dev/null | tail -1 | head -c "$max_chars"
+}
+
+# Count tasks for a session: returns "done/total done" or "-"
+task_summary() {
+    local session_id="$1"
+    local task_dir="$TASKS_DIR/$session_id"
+    [[ -d "$task_dir" ]] || { echo "-"; return; }
+
+    local total=0 done=0
+    for f in "$task_dir"/*.json; do
+        [[ -f "$f" ]] || continue
+        local status
+        status=$(jq -r '.status // empty' "$f" 2>/dev/null)
+        [[ -n "$status" ]] || continue
+        (( total++ ))
+        [[ "$status" == "completed" ]] && (( done++ ))
+    done
+
+    if (( total == 0 )); then
+        echo "-"
+    else
+        echo "$done/$total done"
+    fi
+}
+
+# Get most recent session entry from a sessions-index.json
+# Outputs tab-separated: sessionId, summary, messageCount, gitBranch, fullPath
+most_recent_session() {
+    local index_file="$1"
+    [[ -f "$index_file" ]] || return
+    jq -r '
+        .entries | sort_by(.modified) | last //empty |
+        [.sessionId, .summary, (.messageCount|tostring), .gitBranch, .fullPath] |
+        @tsv
+    ' "$index_file" 2>/dev/null
+}
+
+# Truncate string to fit width, adding "..." if needed
+truncate() {
+    local str="$1"
+    local max="$2"
+    if (( ${#str} > max )); then
+        echo "${str:0:$((max-3))}..."
+    else
+        echo "$str"
+    fi
+}
+
+# Right-pad string to width
+pad() {
+    printf "%-${2}s" "$1"
+}
+
+render() {
+    local now
+    now=$(date +%s)
+    local cols
+    cols=$(tput cols 2>/dev/null || echo 120)
+
+    # Column widths
+    local name_w=27
+    local status_w=10
+    local msgs_w=6
+    local tasks_w=10
+    # Remaining space for last activity
+    local activity_w=$(( cols - name_w - status_w - msgs_w - tasks_w - 4 ))
+    (( activity_w < 20 )) && activity_w=20
+
+    # Header
+    local date_str
+    date_str=$(date "+%d %b %Y %H:%M:%S")
+    printf "${bold}${cyan} Claude Agent Monitor${reset}"
+    printf "%*s" $(( cols - 22 )) "$date_str"
+    echo
+    printf " %0.s=" $(seq 1 $(( cols - 2 )))
+    echo
+    echo
+
+    # --- Phase 1: Zellij sessions ---
+    printf " ${bold}ZELLIJ SESSIONS${reset}\n"
+    printf " ${dim}$(pad "SESSION" $name_w)$(pad "STATUS" $status_w)$(pad "MSGS" $msgs_w)$(pad "TASKS" $tasks_w)LAST ACTIVITY${reset}\n"
+    printf " %0.s-" $(seq 1 $(( cols - 2 )))
+    echo
+
+    local shown_dirs=()
+    local zellij_count=0
+    local active_count=0
+    local recent_count=0
+
+    # Get Zellij sessions (exclude EXITED and current)
+    local sessions=()
+    while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        # Skip exited sessions
+        [[ "$line" == *"EXITED"* ]] && continue
+        # Skip current session (that's us)
+        [[ "$line" == *"(current)"* ]] && continue
+        # Extract session name (everything before " [Created")
+        local name
+        name=$(echo "$line" | sed 's/ \[Created.*//')
+        sessions+=("$name")
+    done < <(zellij list-sessions --no-formatting 2>/dev/null)
+
+    for session_name in "${sessions[@]}"; do
+        (( zellij_count++ ))
+        local wt_path="$WT_DIR/$session_name"
+        local encoded
+        encoded=$(encode_path "$wt_path")
+        local index_file="$PROJECTS_DIR/$encoded/sessions-index.json"
+
+        if [[ ! -d "$wt_path" ]] || [[ ! -f "$index_file" ]]; then
+            # No worktree or no Claude data
+            printf " $(pad "$session_name" $name_w)"
+            printf "${dim_white}$(pad "- n/a" $status_w)${reset}"
+            printf "$(pad "-" $msgs_w)"
+            printf "$(pad "-" $tasks_w)"
+            printf "${dim}(no claude data)${reset}"
+            echo
+            shown_dirs+=("$encoded")
+            continue
+        fi
+
+        shown_dirs+=("$encoded")
+
+        local session_data
+        session_data=$(most_recent_session "$index_file")
+        [[ -z "$session_data" ]] && {
+            printf " $(pad "$session_name" $name_w)"
+            printf "${dim_white}$(pad "- none" $status_w)${reset}"
+            printf "$(pad "-" $msgs_w)"
+            printf "$(pad "-" $tasks_w)"
+            printf "${dim}(no sessions)${reset}"
+            echo
+            continue
+        }
+
+        local session_id summary msg_count git_branch jsonl_path
+        IFS=$'\t' read -r session_id summary msg_count git_branch jsonl_path <<< "$session_data"
+
+        # Activity status from JSONL mtime
+        local status_str
+        if [[ -f "$jsonl_path" ]]; then
+            local mtime
+            mtime=$(stat -f "%m" "$jsonl_path" 2>/dev/null || echo 0)
+            local age=$(( now - mtime ))
+            status_str=$(activity_status "$age")
+            (( age < 120 )) && (( active_count++ ))
+            (( age >= 120 && age < 600 )) && (( recent_count++ ))
+        else
+            status_str="${dim}? unk${reset}"
+        fi
+
+        # Tasks
+        local tasks
+        tasks=$(task_summary "$session_id")
+
+        # Last action
+        local action
+        action=$(last_action "$jsonl_path" "$activity_w")
+        [[ -z "$action" ]] && action="$summary"
+        action=$(truncate "$action" "$activity_w")
+
+        local display_name
+        display_name=$(truncate "$session_name" $(( name_w - 1 )))
+
+        printf " $(pad "$display_name" $name_w)"
+        printf "$status_str"
+        # status_str has ANSI codes, so pad manually after
+        local status_plain
+        if [[ -f "$jsonl_path" ]]; then
+            local mtime
+            mtime=$(stat -f "%m" "$jsonl_path" 2>/dev/null || echo 0)
+            local age=$(( now - mtime ))
+            if (( age < 120 )); then
+                status_plain="● act"
+            elif (( age < 600 )); then
+                status_plain="◐ rec"
+            else
+                status_plain="○ idle"
+            fi
+        else
+            status_plain="? unk"
+        fi
+        local pad_needed=$(( status_w - ${#status_plain} ))
+        (( pad_needed > 0 )) && printf "%*s" "$pad_needed" ""
+
+        printf "$(pad "$msg_count" $msgs_w)"
+        printf "$(pad "$tasks" $tasks_w)"
+        printf "%s" "$action"
+        echo
+    done
+
+    if (( zellij_count == 0 )); then
+        printf " ${dim}(no active Zellij sessions)${reset}\n"
+    fi
+
+    echo
+
+    # --- Phase 2: Other Claude sessions (active in last hour) ---
+    printf " ${bold}OTHER SESSIONS${reset} ${dim}(active in last hour)${reset}\n"
+    printf " ${dim}$(pad "PROJECT" $name_w)$(pad "STATUS" $status_w)$(pad "MSGS" $msgs_w)$(pad "TASKS" $tasks_w)LAST ACTIVITY${reset}\n"
+    printf " %0.s-" $(seq 1 $(( cols - 2 )))
+    echo
+
+    local other_count=0
+    local one_hour_ago=$(( now - 3600 ))
+
+    while IFS= read -r index_file; do
+        [[ -z "$index_file" ]] && continue
+
+        # Get the directory name (Claude encoded project dir)
+        local dir_name
+        dir_name=$(basename "$(dirname "$index_file")")
+
+        # Skip if already shown in Phase 1
+        local skip=false
+        for shown in "${shown_dirs[@]+"${shown_dirs[@]}"}"; do
+            if [[ "$dir_name" == "$shown" ]]; then
+                skip=true
+                break
+            fi
+        done
+        $skip && continue
+
+        # Get most recent session
+        local session_data
+        session_data=$(most_recent_session "$index_file")
+        [[ -z "$session_data" ]] && continue
+
+        local session_id summary msg_count git_branch jsonl_path
+        IFS=$'\t' read -r session_id summary msg_count git_branch jsonl_path <<< "$session_data"
+
+        # Check JSONL mtime - only show if active in last hour
+        [[ -f "$jsonl_path" ]] || continue
+        local mtime
+        mtime=$(stat -f "%m" "$jsonl_path" 2>/dev/null || echo 0)
+        (( mtime < one_hour_ago )) && continue
+
+        local age=$(( now - mtime ))
+        (( age < 120 )) && (( active_count++ ))
+        (( age >= 120 && age < 600 )) && (( recent_count++ ))
+
+        (( other_count++ ))
+
+        # Derive project label from originalPath
+        local project_label
+        project_label=$(jq -r '.originalPath // empty' "$index_file" 2>/dev/null | xargs basename 2>/dev/null)
+        [[ -z "$project_label" ]] && project_label="$dir_name"
+        project_label=$(truncate "$project_label" $(( name_w - 1 )))
+
+        local status_str
+        status_str=$(activity_status "$age")
+        local status_plain
+        if (( age < 120 )); then
+            status_plain="● act"
+        elif (( age < 600 )); then
+            status_plain="◐ rec"
+        else
+            status_plain="○ idle"
+        fi
+
+        local tasks
+        tasks=$(task_summary "$session_id")
+
+        local action
+        action=$(last_action "$jsonl_path" "$activity_w")
+        [[ -z "$action" ]] && action="$summary"
+        action=$(truncate "$action" "$activity_w")
+
+        printf " $(pad "$project_label" $name_w)"
+        printf "$status_str"
+        local pad_needed=$(( status_w - ${#status_plain} ))
+        (( pad_needed > 0 )) && printf "%*s" "$pad_needed" ""
+        printf "$(pad "$msg_count" $msgs_w)"
+        printf "$(pad "$tasks" $tasks_w)"
+        printf "%s" "$action"
+        echo
+    done < <(find "$PROJECTS_DIR" -name sessions-index.json -maxdepth 2 2>/dev/null)
+
+    if (( other_count == 0 )); then
+        printf " ${dim}(none)${reset}\n"
+    fi
+
+    echo
+    printf " %0.s-" $(seq 1 $(( cols - 2 )))
+    echo
+
+    local total=$(( zellij_count + other_count ))
+    printf " ${dim}${total} sessions | ${active_count} active | ${recent_count} recent | Refresh: ${REFRESH_INTERVAL}s | Alt+↓ for detail${reset}\n"
+}
+
+# Main loop: flicker-free refresh
+tput civis 2>/dev/null  # hide cursor
+trap 'tput cnorm 2>/dev/null; exit 0' EXIT INT TERM
+
+while true; do
+    tput cup 0 0 2>/dev/null
+    render
+    tput ed 2>/dev/null   # clear from cursor to end of screen
+    sleep "$REFRESH_INTERVAL"
+done
