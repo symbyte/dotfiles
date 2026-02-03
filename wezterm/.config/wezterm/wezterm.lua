@@ -20,7 +20,7 @@ if is_windows then
 else
   config.font = wezterm.font("Monaspace Neon")
 end
-config.font_size = 11.0
+config.font_size = 8.0
 
 -- Tab title shows current directory name of first pane
 wezterm.on("format-tab-title", function(tab)
@@ -35,16 +35,16 @@ wezterm.on("format-tab-title", function(tab)
 end)
 
 -- Adjust font size based on screen size (larger font for external displays)
--- Only on macOS; Windows uses the default font size
+-- Only on macOS; Windows uses the default font size (11.0)
 if not is_windows then
   local function update_font_for_screen(window)
     local overrides = window:get_config_overrides() or {}
     local screens = wezterm.gui.screens()
     local active_screen = screens.active
     if active_screen.width > 2000 then
-      overrides.font_size = 14.0
-    else
       overrides.font_size = 11.0
+    else
+      overrides.font_size = 8.0
     end
     window:set_config_overrides(overrides)
   end
@@ -127,6 +127,12 @@ config.keys = {
   -- Disable Alt+Space system menu so it passes through to terminal
   { key = "Space", mods = "ALT", action = act.DisableDefaultAssignment },
 }
+
+-- On Windows, AHK remaps Alt+Space to Ctrl+Shift+F5 to bypass the system menu.
+-- Translate it back to Alt+Space so Zellij receives the correct key.
+if is_windows then
+  table.insert(config.keys, { key = "F5", mods = "CTRL|SHIFT", action = act.SendKey({ key = " ", mods = "ALT" }) })
+end
 
 -- Mouse bindings
 config.mouse_bindings = {
