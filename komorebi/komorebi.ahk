@@ -19,124 +19,6 @@ SwitchWorkspace(name) {
 }
 
 ; ============================================
-; Audio Focus Toggle
-; ============================================
-global AudioFocusedPID := 0
-global AudioSavedMuteStates := Map()
-
-ToggleAudioFocus() {
-    global AudioFocusedPID, AudioSavedMuteStates
-
-    currentPID := WinGetPID("A")
-
-    if (AudioFocusedPID = 0) {
-        ApplyAudioFocus(currentPID)
-    } else if (AudioFocusedPID = currentPID) {
-        RestoreAudio()
-    } else {
-        RestoreAudio()
-        ApplyAudioFocus(currentPID)
-    }
-}
-
-ApplyAudioFocus(targetPID) {
-    global AudioFocusedPID, AudioSavedMuteStates
-
-    windowTitle := WinGetTitle("A")
-    AudioSavedMuteStates := Map()
-
-    sessions := GetAudioSessions()
-
-    for session in sessions {
-        if (session.pid = targetPID)
-            continue
-
-        try {
-            currentMute := GetSessionMute(session.volume)
-            AudioSavedMuteStates[session.pid] := currentMute
-
-            if (!currentMute)
-                SetSessionMute(session.volume, true)
-        }
-    }
-
-    AudioFocusedPID := targetPID
-    TrayTip("Audio Focused", windowTitle, 1)
-}
-
-RestoreAudio() {
-    global AudioFocusedPID, AudioSavedMuteStates
-
-    sessions := GetAudioSessions()
-
-    for session in sessions {
-        if (AudioSavedMuteStates.Has(session.pid)) {
-            try {
-                wasMuted := AudioSavedMuteStates[session.pid]
-                SetSessionMute(session.volume, wasMuted)
-            }
-        }
-    }
-
-    AudioSavedMuteStates := Map()
-    AudioFocusedPID := 0
-    TrayTip("Audio Restored", "All audio restored", 1)
-}
-
-GetAudioSessions() {
-    sessions := []
-
-    IMMDeviceEnumerator := ComObject("{BCDE0395-E52F-467C-8E3D-C4579291692E}", "{A95664D2-9614-4F35-A746-DE8DB63617E6}")
-
-    ComCall(4, IMMDeviceEnumerator, "uint", 0, "uint", 1, "ptr*", &device := 0)
-    IMMDevice := ComValue(13, device)
-
-    GUID_IAudioSessionManager2 := Buffer(16)
-    DllCall("ole32\CLSIDFromString", "str", "{77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F}", "ptr", GUID_IAudioSessionManager2)
-    ComCall(3, IMMDevice, "ptr", GUID_IAudioSessionManager2, "uint", 23, "ptr", 0, "ptr*", &manager := 0)
-    IAudioSessionManager2 := ComValue(13, manager)
-
-    ComCall(5, IAudioSessionManager2, "ptr*", &enumerator := 0)
-    IAudioSessionEnumerator := ComValue(13, enumerator)
-
-    ComCall(3, IAudioSessionEnumerator, "int*", &count := 0)
-
-    Loop count {
-        try {
-            ComCall(4, IAudioSessionEnumerator, "int", A_Index - 1, "ptr*", &sessionControl := 0)
-            IAudioSessionControl := ComValue(13, sessionControl)
-
-            GUID_IAudioSessionControl2 := Buffer(16)
-            DllCall("ole32\CLSIDFromString", "str", "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}", "ptr", GUID_IAudioSessionControl2)
-            ComCall(0, IAudioSessionControl, "ptr", GUID_IAudioSessionControl2, "ptr*", &sessionControl2 := 0)
-            IAudioSessionControl2 := ComValue(13, sessionControl2)
-
-            ComCall(14, IAudioSessionControl2, "uint*", &pid := 0)
-
-            if (pid = 0)
-                continue
-
-            GUID_ISimpleAudioVolume := Buffer(16)
-            DllCall("ole32\CLSIDFromString", "str", "{87CE5498-68D6-44E5-9215-6DA47EF883D8}", "ptr", GUID_ISimpleAudioVolume)
-            ComCall(0, IAudioSessionControl, "ptr", GUID_ISimpleAudioVolume, "ptr*", &volumePtr := 0)
-
-            sessions.Push({pid: pid, volume: volumePtr})
-        }
-    }
-
-    return sessions
-}
-
-GetSessionMute(volumePtr) {
-    ComCall(4, volumePtr, "int*", &mute := 0)
-    return mute
-}
-
-SetSessionMute(volumePtr, mute) {
-    ComCall(5, volumePtr, "int", mute, "ptr", 0)
-}
-
-; ============================================
 ; Block Win key alone (Start menu)
 ; Use ~LWin to allow it to pass through for combos
 ; ============================================
@@ -153,13 +35,25 @@ SetSessionMute(volumePtr, mute) {
 }
 
 ; ============================================
+; Windows Terminal context-sensitive hotkeys
+; Translate Win+key to Ctrl+Alt+key for Windows Terminal
+; ============================================
+#HotIf WinActive("ahk_exe WindowsTerminal.exe")
+#d::Send "^!d"      ; Win+D -> Ctrl+Alt+D (split right)
+#t::Send "^!t"      ; Win+T -> Ctrl+Alt+T (new tab)
+#+d::Send "^!+d"    ; Win+Shift+D -> Ctrl+Alt+Shift+D (split down)
+#+[::Send "^!["     ; Win+Shift+[ -> Ctrl+Alt+[ (prev tab)
+#+]::Send "^!]"     ; Win+Shift+] -> Ctrl+Alt+] (next tab)
+#HotIf
+
+; ============================================
 ; Block ALL Win+key combinations
 ; Letters
 ; ============================================
-#a::ToggleAudioFocus()  ; EXCEPTION: Audio focus toggle
+#a::return
 #b::return
 #c::return
-#d::return
+; #d - EXCEPTION: unblocked for Show Desktop
 #e::return
 #f::return
 #g::return
@@ -168,7 +62,7 @@ SetSessionMute(volumePtr, mute) {
 #j::return
 #k::return
 ; #l - EXCEPTION: kept for Lock screen
-#m::return
+#m::Komorebic("minimize")  ; Minimize focused window
 #n::return
 #o::return
 #p::return
@@ -230,7 +124,7 @@ SetSessionMute(volumePtr, mute) {
 #Down::return
 #Left::return
 #Right::return
-#PrintScreen::return
+; #PrintScreen - EXCEPTION: kept for screenshots
 #Pause::return
 #ScrollLock::return
 #CapsLock::return
@@ -254,7 +148,7 @@ SetSessionMute(volumePtr, mute) {
 #+a::return
 #+b::return
 #+c::return
-#+d::return
+; #+d - EXCEPTION: unblocked
 #+e::return
 #+f::return
 #+g::return
@@ -269,7 +163,7 @@ SetSessionMute(volumePtr, mute) {
 #+p::return
 #+q::return
 #+r::return
-#+s::return
+; #+s - EXCEPTION: kept for Snipping Tool screenshots
 #+t::return
 #+u::return
 #+v::return
