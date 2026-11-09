@@ -13,6 +13,7 @@ return {
     },
   },
   keys = {
+    { "<leader>oc", "<cmd>OverseerShell<cr>", desc = "Create Overseer shell task", mode = "n" },
     { "<leader>ol", "<cmd>OverseerLoad<cr>", desc = "Load Overseer task bundle", mode = "n" },
     { "<leader>os", "<cmd>OverseerSave<cr>", desc = "Save Overseer task bundle", mode = "n" },
   },

@@ -3,6 +3,11 @@
 A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
 Refer to the [documentation](https://lazyvim.github.io/installation) to get started.
 
+## Shell tasks
+
+In normal mode, press `<leader>oc` (`Space`, `o`, `c`) to create an Overseer
+shell task. Enter a shell command and press Enter to run it.
+
 ## Startup troubleshooting
 
 This configuration is linked into `~/.config/nvim` with GNU Stow.
