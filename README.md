@@ -64,7 +64,7 @@ Homebrew should work out of the box:
    make
 
    # Or stow specific packages
-   stow --target=$HOME bash bin gitconfig nvim starship lazygit fd pgcli
+   stow --target=$HOME bash bin local-bin gitconfig nvim starship lazygit fd pgcli
    ```
 
 ## Packages
@@ -73,6 +73,7 @@ Homebrew should work out of the box:
 | ----------- | ------------------------------------------------------- |
 | `bash`      | Bash configuration (.bashrc, .aliases, .env, .fzf.bash) |
 | `bin`       | Personal scripts                                        |
+| `local-bin` | Local scripts, including `delta-adaptive` (requires Python 3 and Delta) |
 | `gitconfig` | Git configuration                                       |
 | `nvim`      | Neovim configuration                                    |
 | `starship`  | Starship prompt configuration                           |

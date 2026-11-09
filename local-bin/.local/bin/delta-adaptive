@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Render added/deleted files unified and modified files side-by-side.
+
+Usage: delta-adaptive [delta options] < patch
+Preserves Delta's Git configuration; layout is overridden per file. Paging is
+disabled by default so the caller (for example Lazygit) can manage scrolling.
+"""
+
+import os
+import re
+import subprocess
+import sys
+
+
+ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
+DIFF_HEADERS = (b"diff --git ", b"diff --cc ", b"diff --combined ")
+
+
+def patches(stream):
+    lines = []
+    is_patch = False
+    unified = False
+    in_header = False
+    for line in stream:
+        plain = ANSI.sub(b"", line).rstrip(b"\r\n")
+        if plain.startswith(DIFF_HEADERS):
+            if lines:
+                yield b"".join(lines), unified if is_patch else None
+            lines = []
+            is_patch = True
+            unified = False
+            in_header = True
+        elif in_header:
+            if plain.startswith((b"@@", b"GIT binary patch")):
+                in_header = False
+            elif plain.startswith((b"new file mode ", b"deleted file mode ")):
+                unified = True
+            elif plain in (b"--- /dev/null", b"+++ /dev/null"):
+                unified = True
+        lines.append(line)
+    if lines:
+        yield b"".join(lines), unified if is_patch else None
+
+
+def main():
+    command = ["delta", *sys.argv[1:]]
+    if not any(arg == "--paging" or arg.startswith("--paging=") for arg in sys.argv[1:]):
+        command.append("--paging=never")
+    for patch, unified in patches(sys.stdin.buffer):
+        environment = os.environ.copy()
+        if unified is not None:
+            layout = "false" if unified else "true"
+            parameters = environment.get("GIT_CONFIG_PARAMETERS", "")
+            environment["GIT_CONFIG_PARAMETERS"] = (
+                f"{parameters} 'delta.side-by-side={layout}'".strip()
+            )
+        result = subprocess.run(command, input=patch, env=environment)
+        if result.returncode:
+            return result.returncode if result.returncode > 0 else 128 - result.returncode
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except FileNotFoundError as error:
+        sys.exit(f"delta-adaptive: {error}")
+    except BrokenPipeError:
+        sys.exit(141)

@@ -5,9 +5,10 @@ keybinding:
     fetchRemote: F
     sortOrder: O
 git:
-  pagers:
-    - colorArg: always
-      pager: delta --dark --paging=never
+  paging:
+    colorArg: always
+    # Whole-file additions/deletions unified; modified files side-by-side.
+    pager: delta-adaptive --dark --paging=never
   mainBranches:
     - staging
     - master
