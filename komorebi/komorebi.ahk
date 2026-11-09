@@ -124,7 +124,7 @@ SwitchWorkspace(name) {
 #Down::return
 #Left::return
 #Right::return
-; #PrintScreen - EXCEPTION: kept for screenshots
+; #PrintScreen - EXCEPTION: keep Windows screenshot saving
 #Pause::return
 #ScrollLock::return
 #CapsLock::return
@@ -163,7 +163,7 @@ SwitchWorkspace(name) {
 #+p::return
 #+q::return
 #+r::return
-; #+s - EXCEPTION: kept for Snipping Tool screenshots
+; #+s - EXCEPTION: keep Snipping Tool screenshot selection
 #+t::return
 #+u::return
 #+v::return

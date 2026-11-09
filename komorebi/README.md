@@ -136,8 +136,13 @@ Then sign out and back in.
 |-----|--------|
 | `Win+L` | Lock screen |
 | `Win+Space` | Input language switching |
+| `Win+Shift+S` | Open Snipping Tool screenshot selection |
+| `Win+PrintScreen` | Save a full-screen screenshot |
+| `PrintScreen` | Windows-configured Print Screen action: Snipping Tool or clipboard capture |
+| `Alt+PrintScreen` | Copy the active window screenshot to the clipboard |
+| `Win+Alt+PrintScreen` | Xbox Game Bar screenshot capture, when available |
 
-All other Win key combinations are blocked.
+The script does not intercept these screenshot combinations. Other Win combinations explicitly listed in the script remain blocked unless assigned to window-management actions.
 
 ## Configuration Details
 
