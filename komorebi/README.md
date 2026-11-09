@@ -220,6 +220,15 @@ komorebic start --clean-state --config "$env:USERPROFILE\komorebi.json"
 2. Press `Alt+O` to reload the AHK script
 3. Verify komorebi is running: `komorebic state`
 
+### Workspace shortcuts do nothing after a display change
+If `komorebic state` shows only an unnamed workspace, the named destinations are missing from the running monitor state. Press `Alt+Shift+O` to reapply the active `komorebi.json` beside the AHK script, or run:
+
+```powershell
+komorebic replace-configuration "$env:USERPROFILE\komorebi.json"
+```
+
+This can change window placement or focus. `reload-configuration` only reloads legacy AHK/PowerShell configuration; it does not reload JSON. After updating the bindings script, press `Alt+O` once to activate the corrected JSON-reload shortcut.
+
 ### Browser/Copilot opening on hyper key
 You forgot to disable the Office Key handler. See [Disable Office Key](#disable-office-key-required).
 

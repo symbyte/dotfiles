@@ -378,7 +378,7 @@ SwitchWorkspace(name) {
 ; Reload configs
 ; ============================================
 !o::Reload  ; Alt+O = Reload this AHK script
-!+o::Komorebic("reload-configuration")  ; Alt+Shift+O = Reload komorebi
+!+o::Komorebic('replace-configuration "' A_ScriptDir '\komorebi.json"')  ; Alt+Shift+O = Reload komorebi JSON
 
 ; ============================================
 ; Layout toggles
