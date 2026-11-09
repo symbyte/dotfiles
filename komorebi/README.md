@@ -17,6 +17,8 @@ winget install LGUG2Z.komorebi
 winget install AutoHotkey.AutoHotkey
 ```
 
+The Windows installation was upgraded to komorebi **0.1.41**. For future upgrades, stop the manager with `komorebic stop`, run `winget upgrade --id LGUG2Z.komorebi --exact --source winget`, then restart with `komorebic start --config "$env:USERPROFILE\komorebi.json"`. Stopping and restarting can change focus or window placement; do not use `--clean-state` unless intentionally discarding saved placement.
+
 ### 2. Copy Configuration Files
 
 Copy the following files to your user directory (`C:\Users\<username>\`):
@@ -27,14 +29,31 @@ Copy the following files to your user directory (`C:\Users\<username>\`):
 
 ### 3. Add to Startup
 
-Create shortcuts in `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\`:
+Register both programs in the current user's Windows Startup folder. They run at Windows sign-in, including after a reboot, without requiring WSL or a terminal session:
 
-**komorebi.lnk:**
-- Target: `komorebic.exe`
-- Arguments: `start`
+```powershell
+komorebic enable-autostart --config "$env:USERPROFILE\komorebi.json"
 
-**komorebi-keys.lnk:**
-- Target: `C:\Users\<username>\komorebi.ahk`
+$startup = [Environment]::GetFolderPath('Startup')
+$shell = New-Object -ComObject WScript.Shell
+$shortcut = $shell.CreateShortcut((Join-Path $startup 'komorebi-keys.lnk'))
+$shortcut.TargetPath = Join-Path $env:ProgramFiles 'AutoHotkey\v2\AutoHotkey64.exe'
+$shortcut.Arguments = '"' + (Join-Path $env:USERPROFILE 'komorebi.ahk') + '"'
+$shortcut.WorkingDirectory = $env:USERPROFILE
+$shortcut.WindowStyle = 7
+$shortcut.Description = 'Load Komorebi workspace hotkeys at Windows sign-in'
+$shortcut.Save()
+```
+
+These commands save startup entries; they do not launch or reload either program. `komorebi.lnk` loads the active `komorebi.json`, while `komorebi-keys.lnk` loads the active `komorebi.ahk`. Future edits to those files are used on the next sign-in; `komorebi.pending.json` is not loaded.
+
+For Komorebi 0.1.40, do not use the obsolete `--ahk` argument on `komorebic start`; AutoHotkey starts independently through its own shortcut. The bindings launcher must target `AutoHotkey64.exe`, not `AutoHotkey.exe`.
+
+When replacing the old batch-file launcher, remove it to avoid duplicate AutoHotkey startup entries:
+
+```powershell
+Remove-Item -LiteralPath (Join-Path $startup 'komorebi-keys.bat') -ErrorAction SilentlyContinue
+```
 
 ## Critical Windows Fixes
 
