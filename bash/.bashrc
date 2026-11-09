@@ -40,6 +40,5 @@ PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 export PATH="$HOME/.local/bin:$PATH"
 
-export PATH=$PATH:$(go env GOPATH)/bin
 export PATH="$HOME/.local/bin:$PATH"
 [ -f ~/.config/op/plugins.sh ] && source ~/.config/op/plugins.sh

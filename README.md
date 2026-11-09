@@ -95,7 +95,7 @@ Homebrew should work out of the box:
 ## Notes
 
 - The `.bashrc` expects these tools to be installed: `starship`, `zoxide`, `fzf`, `nvim`
-- If you use Go, install it separately and the PATH will be configured automatically
+- If you use Go, install it separately and add its binary directory to PATH yourself
 - For NVM (Node Version Manager), install it separately: <https://github.com/nvm-sh/nvm>
 - Create `~/.env-local` for machine-specific environment variables
 
