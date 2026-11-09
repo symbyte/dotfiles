@@ -2,3 +2,17 @@
 
 A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
 Refer to the [documentation](https://lazyvim.github.io/installation) to get started.
+
+## Startup troubleshooting
+
+This configuration is linked into `~/.config/nvim` with GNU Stow.
+After removing or renaming plugin configuration files in this repository, check
+for stale links with `find ~/.config/nvim -xtype l -print`. Remove only links
+whose targets no longer exist; dangling `.lua` links cause Lazy plugin imports
+to fail.
+
+If LazyVim asks to update Treesitter, run
+`:Lazy update nvim-treesitter nvim-treesitter-textobjects`, then restart Neovim.
+Keep both plugins aligned with LazyVim's branch and commit requirements; let
+parser installation finish before closing the editor. The resolved plugin
+versions are recorded in `lazy-lock.json`.
