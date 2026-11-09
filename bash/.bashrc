@@ -42,3 +42,6 @@ export PATH="$HOME/.local/bin:$PATH"
 
 export PATH="$HOME/.local/bin:$PATH"
 [ -f ~/.config/op/plugins.sh ] && source ~/.config/op/plugins.sh
+
+# Vite+ bin (https://viteplus.dev)
+. "/home/symbyte/.config/vite-plus/env"
