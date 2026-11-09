@@ -104,13 +104,13 @@ Then sign out and back in.
 | Key | Action |
 |-----|--------|
 | `Alt+Shift+Ctrl+Win+1-9` | Focus workspace 1-9 |
-| `Alt+Shift+Ctrl+Win+B/C/D/E/I/M/N/O/P/Q/R/S/T/U/W/Y` | Focus named workspace |
+| `Alt+Shift+Ctrl+Win+B/C/D/E/G/I/M/N/O/P/Q/R/S/T/U/W/Y` | Focus named workspace |
 
 ### Move to Workspace (Alt+Shift+Ctrl + Number/Letter)
 | Key | Action |
 |-----|--------|
 | `Alt+Shift+Ctrl+1-9` | Move window to workspace 1-9 |
-| `Alt+Shift+Ctrl+B/C/D/E/I/M/N/O/P/Q/R/S/T/U/W/Y` | Move to named workspace |
+| `Alt+Shift+Ctrl+B/C/D/E/G/I/M/N/O/P/Q/R/S/T/U/W/Y` | Move to named workspace |
 
 ### Layout & Resize
 | Key | Action |
@@ -156,23 +156,53 @@ Key settings matching aerospace behavior:
 
 ### Workspaces
 
-Configured workspaces: `1-9, B, C, D, E, I, M, N, O, P, Q, R, S, T, U, W, Y`
+Configured workspaces: `1-9, B, C, D, E, I, M, N, O, P, Q, R, S, T, U, W, Y, G`. G is appended so existing workspace indices stay unchanged.
 
 ### App-to-Workspace Rules
 
-Apps are automatically moved to designated workspaces:
+All app mappings use `initial_workspace_rules`: applications open on their assigned workspace, but manual moves remain in effect. Do not replace these with permanent `workspace_rules`; those re-enforce placement on managed-window events and prevent moving different apps together for tiling. BSP splits multiple windows on the same workspace; a workspace with one window fills the screen without native maximization.
 
 | Workspace | Apps |
 |-----------|------|
-| B | Chrome |
-| C | Slack |
-| M | Zoom |
+| B | Normal Chrome, Edge, and Arc windows, regardless of the current website; unmatched standalone web apps |
+| C | Slack, Discord, Teams, Skype, email, Google Messages, and other configured messaging apps |
+| D | Windows Terminal, WezTerm, Ghostty, Alacritty, Kitty, and configured terminal hosts |
+| E | Other video and music streaming services formerly assigned to M, excluding YouTube and Twitch |
+| G | Final Fantasy XIV and its launchers |
+| M | Zoom and standalone Google Meet web-app windows |
 | N | Obsidian, Notion |
 | P | Figma, Linear |
-| S | Todoist |
-| T | Ghostty |
-| U | WaveLink, StreamDeck, Cisco AnyConnect |
-| Y | Cypress |
+| S | Calendar, Notion Calendar, Cron, Todoist; standalone calendar web apps |
+| T | Twitch |
+| U | SteelSeries GG, WaveLink, StreamDeck, Cisco AnyConnect |
+| Y | YouTube, YouTube Music, Cypress |
+
+Normal Chrome and Edge windows are recognized by the ` - Google Chrome` and ` - Microsoft Edge` title suffixes and initially route to B regardless of the active website. Arc windows also initially route to B. Service-title rules apply only to standalone Chrome/Edge web-app windows without those browser suffixes: Messages opens in C, Calendar in S, YouTube in Y, Twitch in T, Google Meet/Zoom in M, and other configured streaming services in E. Later title changes and manual workspace moves do not continuously reclassify an already-routed window.
+
+Within standalone web apps, Zoom/Google Meet app-title prefixes take precedence over the other service categories. Calendar/Todoist titles then take precedence over communication and streaming titles. YouTube takes precedence over Twitch if both names appear; other communication titles take precedence over other streaming titles in E. The Google Messages rule includes its initial `Messages` title, before the conversation title finishes loading after sign-in. Rules move entire windows, not individual tabs. New services need an explicit identifier in `komorebi.json`; there is no automatic streaming-service classification.
+
+Windows Terminal is identified by `CASCADIA_HOSTING_WINDOW_CLASS`, rather than force-managing every window owned by `WindowsTerminal.exe`. This excludes its `IME` and `MSCTFIME UI` helper windows. Final Fantasy XIV uses `FFXIVGAME` so its borderless game window remains managed.
+
+The vendor `applications.json` ignores `Zoom.exe` by default. The staged `applications.pending.json` removes only that application entry so Zoom's normal windows can be managed and routed to M without force-managing every Zoom helper window. Apply that file together with the staged main configuration. Fetching a fresh vendor application-rules file may restore the Zoom ignore entry; remove it again if Zoom should remain managed.
+
+#### Komorebi 0.1.40 regex handling
+
+This version does not populate the shared regex cache from workspace rules alone. The browser executable and service-title regexes are also registered in `tray_and_multi_window_applications`. Keep those regex strings identical to their corresponding workspace-rule strings. A single service-title regex avoids overlapping workspace rules matching the same browser window more than once.
+
+#### Applying changes under your control
+
+Writing the active `komorebi.json` triggers an automatic reload and can move windows or change focus. To avoid disruption, prepare changes separately and apply them only when ready.
+
+For the staged configuration on this computer, run the following in PowerShell only when ready to rebuild window placement. This stops the manager before copying, avoiding an intermediate automatic reload:
+
+```powershell
+komorebic stop
+Copy-Item -LiteralPath "$env:USERPROFILE\applications.pending.json" -Destination "$env:USERPROFILE\applications.json" -Force
+Copy-Item -LiteralPath "$env:USERPROFILE\komorebi.pending.json" -Destination "$env:USERPROFILE\komorebi.json" -Force
+komorebic start --clean-state --config "$env:USERPROFILE\komorebi.json"
+```
+
+`--clean-state` discards cached placements, including previously managed terminal helper windows; it will rearrange windows. Press `Alt+O` to reload the edited AutoHotkey script and activate the new G shortcuts. Validate through normal application use; no test windows or automatic workspace switching are required.
 
 ## Why AutoHotkey Instead of whkd?
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.39/schema.json",
-  "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
+  "app_specific_configuration_path": "C:/Users/steve/applications.json",
   "window_hiding_behaviour": "Cloak",
   "cross_monitor_move_behaviour": "Insert",
   "default_workspace_padding": 0,
@@ -10,6 +10,73 @@
   "border_offset": -1,
   "mouse_follows_focus": true,
   "resize_delta": 50,
+  "manage_rules": [
+    {
+      "kind": "Class",
+      "id": "FFXIVGAME",
+      "matching_strategy": "Equals"
+    },
+    {
+      "kind": "Class",
+      "id": "CASCADIA_HOSTING_WINDOW_CLASS",
+      "matching_strategy": "Equals"
+    }
+  ],
+  "tray_and_multi_window_applications": [
+    {
+      "kind": "Exe",
+      "id": "(?i)^(chrome|msedge|Arc)\\.exe$",
+      "matching_strategy": "Regex"
+    },
+    [
+      {
+        "kind": "Exe",
+        "id": "(?i)^(chrome|msedge)\\.exe$",
+        "matching_strategy": "Regex"
+      },
+      {
+        "kind": "Title",
+        "id": "Netflix|Disney\\+|Prime Video|Plex|Dropout|Xbox|Hulu|Paramount\\+|Peacock|Apple TV|HBO Max|Max -|Crunchyroll|discovery\\+|Spotify|Qobuz|Roon|SoundCloud|Apple Music|Amazon Music|TIDAL",
+        "matching_strategy": "Regex"
+      }
+    ],
+    [
+      {
+        "kind": "Exe",
+        "id": "(?i)^(chrome|msedge)\\.exe$",
+        "matching_strategy": "Regex"
+      },
+      {
+        "kind": "Title",
+        "id": "Slack|Discord|Messages|Gmail|Outlook|Microsoft Teams|WhatsApp|Telegram|Signal|Messenger",
+        "matching_strategy": "Regex"
+      }
+    ],
+    [
+      {
+        "kind": "Exe",
+        "id": "(?i)^(chrome|msedge)\\.exe$",
+        "matching_strategy": "Regex"
+      },
+      {
+        "kind": "Title",
+        "id": "Calendar|Todoist",
+        "matching_strategy": "Regex"
+      }
+    ],
+    [
+      {
+        "kind": "Exe",
+        "id": "(?i)^(chrome|msedge)\\.exe$",
+        "matching_strategy": "Regex"
+      },
+      {
+        "kind": "Title",
+        "id": "^(?:Zoom(?: Workplace| Meeting)?|Google Meet|Meet)(?:$| [-–—] )",
+        "matching_strategy": "Regex"
+      }
+    ]
+  ],
   "theme": {
     "palette": "Base16",
     "name": "Ashes",
@@ -59,11 +126,242 @@
           "name": "B",
           "layout": "BSP",
           "initial_workspace_rules": [
+            [
+              {
+                "kind": "Exe",
+                "id": "chrome.exe",
+                "matching_strategy": "Equals"
+              },
+              {
+                "kind": "Title",
+                "id": " - Google Chrome",
+                "matching_strategy": "EndsWith"
+              }
+            ],
+            [
+              {
+                "kind": "Exe",
+                "id": "msedge.exe",
+                "matching_strategy": "Equals"
+              },
+              {
+                "kind": "Title",
+                "id": " - Microsoft Edge",
+                "matching_strategy": "EndsWith"
+              }
+            ],
             {
-              "kind": "Title",
-              "id": "- Google Chrome",
-              "matching_strategy": "Contains"
-            }
+              "kind": "Exe",
+              "id": "Arc.exe",
+              "matching_strategy": "Equals"
+            },
+            [
+              {
+                "kind": "Exe",
+                "id": "(?i)^(chrome|msedge)\\.exe$",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": " - Google Chrome",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": " - Microsoft Edge",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Slack",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Discord",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Messages",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Gmail",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Outlook",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Microsoft Teams",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "WhatsApp",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Telegram",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Signal",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Messenger",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Zoom",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "YouTube",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Twitch",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Netflix",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Disney+",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Prime Video",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Plex",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Dropout",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Xbox",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Hulu",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Paramount+",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Peacock",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Apple TV",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "HBO Max",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Max -",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Crunchyroll",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "discovery+",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Spotify",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Qobuz",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Roon",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "SoundCloud",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Apple Music",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Amazon Music",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "TIDAL",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Calendar",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Todoist",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Google Meet",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Meet",
+                "matching_strategy": "DoesNotStartWith"
+              }
+            ]
           ]
         },
         {
@@ -74,16 +372,410 @@
               "kind": "Exe",
               "id": "slack.exe",
               "matching_strategy": "Equals"
-            }
+            },
+            {
+              "kind": "Exe",
+              "id": "Slack.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Discord.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "DiscordCanary.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "DiscordPTB.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "DiscordDevelopment.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Teams.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "ms-teams.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Skype.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "WhatsApp.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Telegram.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Signal.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Messenger.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "OUTLOOK.EXE",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "olk.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "HxOutlook.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "PhoneExperienceHost.exe",
+              "matching_strategy": "Equals"
+            },
+            [
+              {
+                "kind": "Exe",
+                "id": "(?i)^(chrome|msedge)\\.exe$",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": " - Google Chrome",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": " - Microsoft Edge",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Slack|Discord|Messages|Gmail|Outlook|Microsoft Teams|WhatsApp|Telegram|Signal|Messenger",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": "YouTube",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Twitch",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Calendar",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Todoist",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Zoom",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Google Meet",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Meet",
+                "matching_strategy": "DoesNotStartWith"
+              }
+            ],
+            [
+              {
+                "kind": "Exe",
+                "id": "ApplicationFrameHost.exe",
+                "matching_strategy": "Equals"
+              },
+              {
+                "kind": "Title",
+                "id": "Mail",
+                "matching_strategy": "Contains"
+              }
+            ],
+            [
+              {
+                "kind": "Exe",
+                "id": "ApplicationFrameHost.exe",
+                "matching_strategy": "Equals"
+              },
+              {
+                "kind": "Title",
+                "id": "Skype",
+                "matching_strategy": "Contains"
+              }
+            ]
           ]
         },
         {
           "name": "D",
-          "layout": "BSP"
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Class",
+              "id": "CASCADIA_HOSTING_WINDOW_CLASS",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "ghostty.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "alacritty.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "mintty.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "ConEmu64.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "ConEmu.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Hyper.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Tabby.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "cmd.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "powershell.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "pwsh.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Class",
+              "id": "org.wezfurlong.wezterm",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Class",
+              "id": "com.mitchellh.ghostty",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Class",
+              "id": "kitty",
+              "matching_strategy": "Equals"
+            }
+          ]
         },
         {
           "name": "E",
-          "layout": "BSP"
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "Kodi.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Moonlight.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Plex.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Plex HTPC.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Netflix.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Spotify.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Qobuz.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Roon.exe",
+              "matching_strategy": "Equals"
+            },
+            [
+              {
+                "kind": "Exe",
+                "id": "(?i)^(chrome|msedge)\\.exe$",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": " - Google Chrome",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": " - Microsoft Edge",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Netflix|Disney\\+|Prime Video|Plex|Dropout|Xbox|Hulu|Paramount\\+|Peacock|Apple TV|HBO Max|Max -|Crunchyroll|discovery\\+|Spotify|Qobuz|Roon|SoundCloud|Apple Music|Amazon Music|TIDAL",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": "Slack",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Discord",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Messages",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Gmail",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Outlook",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Microsoft Teams",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "WhatsApp",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Telegram",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Signal",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Messenger",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Zoom",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "YouTube",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Twitch",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Calendar",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Todoist",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Google Meet",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Meet",
+                "matching_strategy": "DoesNotStartWith"
+              }
+            ],
+            [
+              {
+                "kind": "Exe",
+                "id": "ApplicationFrameHost.exe",
+                "matching_strategy": "Equals"
+              },
+              {
+                "kind": "Title",
+                "id": "Netflix",
+                "matching_strategy": "Contains"
+              }
+            ]
+          ]
         },
         {
           "name": "I",
@@ -98,56 +790,28 @@
               "id": "Zoom.exe",
               "matching_strategy": "Equals"
             },
-            {
-              "kind": "Title",
-              "id": "YouTube",
-              "matching_strategy": "Contains"
-            },
-            {
-              "kind": "Title",
-              "id": "Twitch",
-              "matching_strategy": "Contains"
-            },
-            {
-              "kind": "Title",
-              "id": "Netflix",
-              "matching_strategy": "Contains"
-            },
-            {
-              "kind": "Title",
-              "id": "Disney+",
-              "matching_strategy": "Contains"
-            },
-            {
-              "kind": "Title",
-              "id": "Prime Video",
-              "matching_strategy": "Contains"
-            },
-            {
-              "kind": "Title",
-              "id": "Plex",
-              "matching_strategy": "Contains"
-            },
-            {
-              "kind": "Title",
-              "id": "Dropout",
-              "matching_strategy": "Contains"
-            },
-            {
-              "kind": "Exe",
-              "id": "Kodi.exe",
-              "matching_strategy": "Equals"
-            },
-            {
-              "kind": "Exe",
-              "id": "Moonlight.exe",
-              "matching_strategy": "Equals"
-            },
-            {
-              "kind": "Title",
-              "id": "Xbox",
-              "matching_strategy": "Contains"
-            }
+            [
+              {
+                "kind": "Exe",
+                "id": "(?i)^(chrome|msedge)\\.exe$",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": " - Google Chrome",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": " - Microsoft Edge",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": "^(?:Zoom(?: Workplace| Meeting)?|Google Meet|Meet)(?:$| [-–—] )",
+                "matching_strategy": "Regex"
+              }
+            ]
           ]
         },
         {
@@ -202,29 +866,145 @@
               "kind": "Exe",
               "id": "Todoist.exe",
               "matching_strategy": "Equals"
-            }
+            },
+            {
+              "kind": "Exe",
+              "id": "HxCalendarAppImm.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Notion Calendar.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Cron.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "Calendar.exe",
+              "matching_strategy": "Equals"
+            },
+            [
+              {
+                "kind": "Exe",
+                "id": "(?i)^(chrome|msedge)\\.exe$",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": " - Google Chrome",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": " - Microsoft Edge",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Calendar|Todoist",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": "Zoom",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Google Meet",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Meet",
+                "matching_strategy": "DoesNotStartWith"
+              }
+            ],
+            [
+              {
+                "kind": "Exe",
+                "id": "ApplicationFrameHost.exe",
+                "matching_strategy": "Equals"
+              },
+              {
+                "kind": "Title",
+                "id": "Calendar",
+                "matching_strategy": "Contains"
+              }
+            ]
           ]
         },
         {
           "name": "T",
           "layout": "BSP",
           "initial_workspace_rules": [
-            {
-              "kind": "Exe",
-              "id": "ghostty.exe",
-              "matching_strategy": "Equals"
-            },
-            {
-              "kind": "Exe",
-              "id": "wezterm-gui.exe",
-              "matching_strategy": "Equals"
-            }
+            [
+              {
+                "kind": "Exe",
+                "id": "(?i)^(chrome|msedge)\\.exe$",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": " - Google Chrome",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": " - Microsoft Edge",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Twitch",
+                "matching_strategy": "Contains"
+              },
+              {
+                "kind": "Title",
+                "id": "YouTube",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Calendar",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Todoist",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Zoom",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Google Meet",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Meet",
+                "matching_strategy": "DoesNotStartWith"
+              }
+            ]
           ]
         },
         {
           "name": "U",
           "layout": "BSP",
           "initial_workspace_rules": [
+            {
+              "kind": "Exe",
+              "id": "SteelSeriesGGClient.exe",
+              "matching_strategy": "Equals"
+            },
             {
               "kind": "Exe",
               "id": "WaveLink.exe",
@@ -252,7 +1032,105 @@
           "initial_workspace_rules": [
             {
               "kind": "Exe",
+              "id": "youtube-music-desktop-app.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "YouTube Music Desktop App.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "YouTube Music.exe",
+              "matching_strategy": "Equals"
+            },
+            [
+              {
+                "kind": "Exe",
+                "id": "(?i)^(chrome|msedge)\\.exe$",
+                "matching_strategy": "Regex"
+              },
+              {
+                "kind": "Title",
+                "id": " - Google Chrome",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": " - Microsoft Edge",
+                "matching_strategy": "DoesNotEndWith"
+              },
+              {
+                "kind": "Title",
+                "id": "YouTube",
+                "matching_strategy": "Contains"
+              },
+              {
+                "kind": "Title",
+                "id": "Calendar",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Todoist",
+                "matching_strategy": "DoesNotContain"
+              },
+              {
+                "kind": "Title",
+                "id": "Zoom",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Google Meet",
+                "matching_strategy": "DoesNotStartWith"
+              },
+              {
+                "kind": "Title",
+                "id": "Meet",
+                "matching_strategy": "DoesNotStartWith"
+              }
+            ],
+            {
+              "kind": "Exe",
               "id": "Cypress.exe",
+              "matching_strategy": "Equals"
+            }
+          ]
+        },
+        {
+          "name": "G",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "kind": "Class",
+              "id": "FFXIVGAME",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "ffxivboot64.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "ffxivboot.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "ffxivlauncher64.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "ffxivlauncher.exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "kind": "Exe",
+              "id": "XIVLauncher.exe",
               "matching_strategy": "Equals"
             }
           ]
