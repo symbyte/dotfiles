@@ -4,3 +4,13 @@ pgcli/.config/pgcli/history
 !claude/.claude/
 **/node_modules/
 **/*.tar.gz
+**/*.bak
+**/*.bak.*
+**/__pycache__/
+**/.DS_Store
+gh/.config/gh/hosts.yml
+omp/.omp/agent/*.db*
+omp/.omp/agent/secret*
+omp/.omp/agent/sessions/
+omp/.omp/agent/cache/
+omp/.omp/agent/blobs/
