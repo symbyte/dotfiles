@@ -1,0 +1,10 @@
+cd rustlings
+
+launch nvim .
+
+launch rustlings watch
+
+resize_window wider 5
+
+focus
+
