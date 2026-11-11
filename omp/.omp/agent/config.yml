@@ -1,0 +1,42 @@
+modelRoles:
+  smol: openai-codex/gpt-6-luna:medium
+  slow: openai-codex/gpt-6-astra:xhigh
+  plan: "@slow"
+  task: "@default"
+  commit: "@smol:low"
+  tiny: "@smol:low"
+  memory: "@tiny"
+  vision: openai-codex/gpt-6-astra
+  advisor: openai-codex/gpt-6-astra:high
+  default: openai-codex/gpt-6-astra
+symbolPreset: nerd
+composer:
+  shape: band
+theme:
+  dark: titanium
+setupVersion: 2
+dev:
+  autoqaConsent: granted
+hideThinkingBlock: true
+task:
+  agentModelOverrides:
+    task: "@task"
+    scout: "@smol"
+    sonic: "@smol:low"
+    reviewer: "@slow"
+    security-reviewer: "@slow"
+  isolation:
+    enabled: true
+  showResolvedModelBadge: true
+  enableLsp: true
+  maxConcurrency: 4
+isolation:
+  backend: rcopy
+display:
+  subagentLivePreview: true
+lsp:
+  diagnosticsOnEdit: true
+bash:
+  gitGuard: true
+secrets:
+  enabled: true

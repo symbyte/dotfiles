@@ -1,0 +1,7 @@
+{
+  "name": "omp-delta-diffs",
+  "private": true,
+  "type": "module",
+  "omp": { "extensions": ["index.ts"] },
+  "dependencies": { "marked": "18.1.2" }
+}

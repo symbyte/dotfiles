@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "typescript-language-server": {
+      "disabled": true
+    },
+    "typescript-native": {
+      "command": "/home/symbyte/.nvm/versions/node/v20.11.0/bin/tsc",
+      "args": ["--lsp", "--stdio"],
+      "fileTypes": [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"],
+      "rootMarkers": ["tsconfig.json", "jsconfig.json", "package.json"]
+    }
+  }
+}
