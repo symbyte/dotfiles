@@ -81,7 +81,7 @@ Windows deployment. Never use `stow --restow */`: `komorebi`, `windows`, and
 | `linux` | Linux-only `.profile`, `.bash_aliases`, `.XmodMap`, GTK and Monaspace fontconfig preferences |
 | `bin`, `local-bin` | Home helpers and `~/.local/bin`, including `delta-adaptive` |
 | `nvim` | `~/.config/nvim`; matches the active plugin overrides, not removed or backup Lua files |
-| `zellij` | `~/.config/zellij`; Tokyo Night Moon palette, locked-mode bindings, and saved layouts |
+| `zellij` | `~/.config/zellij`; Tokyo Night Moon palette, locked-mode bindings, `Alt+t` for a new tab in normal/locked modes, and saved layouts |
 | `kitty`, `alacritty`, `starship`, `wezterm` | Linux/macOS terminal/prompt configurations; Kitty includes the Rustlings session |
 | `gh`, `lazygit`, `fd`, `pgcli`, `glow`, `graphite`, `vite-plus` | Developer CLI preferences; authentication and database history remain local |
 | `claude` | `~/.claude` settings and personal agents/commands/plugins |
