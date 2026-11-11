@@ -16,6 +16,12 @@ for stale links with `find ~/.config/nvim -xtype l -print`. Remove only links
 whose targets no longer exist; dangling `.lua` links cause Lazy plugin imports
 to fail.
 
+The tracked overrides now match the live configuration. Removed Aider, Linear,
+MCPHub, Sidekick, Kulala, Lualine, and tsgo overrides (and `.bak` files) are not
+reinstalled by setup. LazyVim can still supply plugins through its own defaults
+and enabled extras. Change the repository files rather than deleting only their
+home-directory symlinks.
+
 If LazyVim asks to update Treesitter, run
 `:Lazy update nvim-treesitter nvim-treesitter-textobjects`, then restart Neovim.
 Keep both plugins aligned with LazyVim's branch and commit requirements; let
