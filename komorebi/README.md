@@ -21,11 +21,12 @@ The Windows installation was upgraded to komorebi **0.1.41**. For future upgrade
 
 ### 2. Copy Configuration Files
 
-Copy the following files to your user directory (`C:\Users\<username>\`):
+From WSL, `make link` in the repository copies the following files to the Windows user directory (`C:\Users\<username>\`), backing up changed destinations. `make capture-windows` brings later Windows-side edits back into Git. Native Windows applications and startup registration remain separate prerequisites.
 
 - `komorebi.json` - Main komorebi configuration
 - `komorebi.ahk` - AutoHotkey keybindings script
-- `applications.json` - App-specific window rules (optional, use komorebi's default)
+- `applications.json` - Customized app-specific window rules, including the Zoom exception
+- `komorebi.bar.json` - Bar appearance and widgets
 
 ### 3. Add to Startup
 
@@ -130,6 +131,16 @@ Then sign out and back in.
 | `Alt+Shift+Ctrl+Win+F` | Retile |
 | `Alt+O` | Reload AHK script |
 | `Alt+Shift+O` | Reload komorebi config |
+| `Win+M` | Minimize focused window |
+
+### Terminal-specific Windows shortcuts
+
+In WezTerm, `Win+D` / `Win+Shift+D` split right/down, `Win+W` closes a pane,
+`Win+T` opens a tab, `Win+Shift+[` / `Win+Shift+]` switch tabs, and `Win+=` /
+`Win+-` change font size. AutoHotkey forwards these through Ctrl+Shift+F13–F20;
+the matching bindings and VS Code Dark palette live in `windows/.wezterm.lua`.
+The existing Windows Terminal Ctrl+Alt shortcut bridge is retained separately.
+Outside these terminals, the existing Show Desktop and minimize shortcuts remain.
 
 ### Preserved Windows Shortcuts
 | Key | Action |
@@ -142,7 +153,7 @@ Then sign out and back in.
 | `Alt+PrintScreen` | Copy the active window screenshot to the clipboard |
 | `Win+Alt+PrintScreen` | Xbox Game Bar screenshot capture, when available |
 
-The script does not intercept these screenshot combinations. Other Win combinations explicitly listed in the script remain blocked unless assigned to window-management actions.
+`Win+Shift+S` explicitly launches `ms-screenclip:`; the other screenshot combinations pass through. Other Win combinations explicitly listed in the script remain blocked unless assigned to window-management actions.
 
 ## Configuration Details
 
@@ -188,7 +199,7 @@ Within standalone web apps, Zoom/Google Meet app-title prefixes take precedence 
 
 Windows Terminal is identified by `CASCADIA_HOSTING_WINDOW_CLASS`, rather than force-managing every window owned by `WindowsTerminal.exe`. This excludes its `IME` and `MSCTFIME UI` helper windows. Final Fantasy XIV uses `FFXIVGAME` so its borderless game window remains managed.
 
-The vendor `applications.json` ignores `Zoom.exe` by default. The staged `applications.pending.json` removes only that application entry so Zoom's normal windows can be managed and routed to M without force-managing every Zoom helper window. Apply that file together with the staged main configuration. Fetching a fresh vendor application-rules file may restore the Zoom ignore entry; remove it again if Zoom should remain managed.
+The vendor `applications.json` ignores `Zoom.exe` by default. The committed `applications.json` contains the customized active rules with that application entry removed, so Zoom's normal windows can be managed and routed to M without force-managing every Zoom helper window. Fetching a fresh vendor rules file may restore the Zoom ignore entry; retain this customization.
 
 #### Komorebi 0.1.40 regex handling
 
@@ -198,16 +209,9 @@ This version does not populate the shared regex cache from workspace rules alone
 
 Writing the active `komorebi.json` triggers an automatic reload and can move windows or change focus. To avoid disruption, prepare changes separately and apply them only when ready.
 
-For the staged configuration on this computer, run the following in PowerShell only when ready to rebuild window placement. This stops the manager before copying, avoiding an intermediate automatic reload:
+The active and pending copies on this computer were identical when collected. The repository now owns the active files; pending copies are not deployed. To apply repository changes, run `make link` from WSL when ready. It only copies changed files and never stops the manager or discards saved placements.
 
-```powershell
-komorebic stop
-Copy-Item -LiteralPath "$env:USERPROFILE\applications.pending.json" -Destination "$env:USERPROFILE\applications.json" -Force
-Copy-Item -LiteralPath "$env:USERPROFILE\komorebi.pending.json" -Destination "$env:USERPROFILE\komorebi.json" -Force
-komorebic start --clean-state --config "$env:USERPROFILE\komorebi.json"
-```
-
-`--clean-state` discards cached placements, including previously managed terminal helper windows; it will rearrange windows. Press `Alt+O` to reload the edited AutoHotkey script and activate the new G shortcuts. Validate through normal application use; no test windows or automatic workspace switching are required.
+Press `Alt+O` to activate updated AutoHotkey bindings. Use `--clean-state` only when intentionally discarding cached placement; it will rearrange windows.
 
 ## Why AutoHotkey Instead of whkd?
 
@@ -221,6 +225,8 @@ komorebic start --clean-state --config "$env:USERPROFILE\komorebi.json"
 3. Verify komorebi is running: `komorebic state`
 
 ### Workspace shortcuts do nothing after a display change
+The AHK script debounces `WM_DISPLAYCHANGE` for five seconds and checks the running single-monitor state. It reapplies JSON only when named workspaces are missing, skips paused/multi-monitor setups, and reports recovery failures through a tray notification.
+
 If `komorebic state` shows only an unnamed workspace, the named destinations are missing from the running monitor state. Press `Alt+Shift+O` to reapply the active `komorebi.json` beside the AHK script, or run:
 
 ```powershell
@@ -242,7 +248,8 @@ The AHK script includes a `SwitchWorkspace` helper that cycles focus after switc
 
 - `komorebi.json` - Komorebi configuration
 - `komorebi.ahk` - AutoHotkey keybindings
-- `applications.json` - App-specific rules (optional)
+- `applications.json` - Customized app-specific rules
+- `komorebi.bar.json` - Bar configuration
 
 ## Credits
 

@@ -6,6 +6,49 @@ InstallKeybdHook
 ; Komorebi keybindings matching aerospace config
 ; Modifiers: # = Win, ! = Alt, + = Shift, ^ = Ctrl
 
+; Streaming replaces the physical display; komorebi can leave the new display unnamed.
+; Debounce WM_DISPLAYCHANGE beyond komorebi's 3-second removal check. No polling.
+OnMessage(0x007E, ScheduleWorkspaceRecovery)
+
+ScheduleWorkspaceRecovery(*) {
+    SetTimer(RecoverDisplayWorkspaces, -5000)
+}
+
+RecoverDisplayWorkspaces() {
+    configPath := StrReplace(A_ScriptDir "\komorebi.json", "'", "''")
+    code := "$configPath = '" configPath "'; "
+    code .= "
+    (Join`s
+        $ErrorActionPreference = 'Stop';
+        if (-not (Get-Process -Name komorebi -ErrorAction SilentlyContinue)) { exit 0 };
+        $cli = (Get-Command komorebic.exe -ErrorAction Stop).Source;
+        $state = (& $cli state | ConvertFrom-Json);
+        if ($LASTEXITCODE -ne 0 -or $null -eq $state.monitors) { exit 1 };
+        if ($state.is_paused -or @($state.monitors.elements).Count -ne 1) { exit 0 };
+        $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json;
+        if (@($config.monitors).Count -ne 1) { exit 0 };
+        $expected = @($config.monitors[0].workspaces.name);
+        if ($expected.Count -eq 0) { exit 0 };
+        $actual = @($state.monitors.elements[0].workspaces.elements.name);
+        $missing = @($expected | Where-Object { $_ -cnotin $actual });
+        if ($missing.Count -eq 0) { exit 0 };
+        & $cli replace-configuration $configPath;
+        if ($LASTEXITCODE -ne 0) { exit 1 };
+        $state = (& $cli state | ConvertFrom-Json);
+        if ($LASTEXITCODE -ne 0 -or $null -eq $state.monitors) { exit 1 };
+        $actual = @($state.monitors.elements[0].workspaces.elements.name);
+        if (@($expected | Where-Object { $_ -cnotin $actual }).Count -gt 0) { exit 1 };
+        exit 0;
+    )"
+    try {
+        exitCode := RunWait('powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -Command "' code '"',, "Hide")
+        if exitCode != 0
+            TrayTip("Workspace recovery failed. Alt+Shift+O reloads the saved configuration.", "Komorebi")
+    } catch Error as err {
+        TrayTip(err.Message, "Komorebi workspace recovery")
+    }
+}
+
 ; Helper function to run komorebic commands
 Komorebic(cmd) {
     Run("komorebic.exe " cmd,, "Hide")
@@ -44,6 +87,21 @@ SwitchWorkspace(name) {
 #+d::Send "^!+d"    ; Win+Shift+D -> Ctrl+Alt+Shift+D (split down)
 #+[::Send "^!["     ; Win+Shift+[ -> Ctrl+Alt+[ (prev tab)
 #+]::Send "^!]"     ; Win+Shift+] -> Ctrl+Alt+] (next tab)
+#HotIf
+
+; Consume physical Win shortcuts only in WezTerm and bridge to neutral Ctrl+Shift keys.
+; Standard Send releases Win for delivery, avoiding Windows shortcuts such as Show Desktop.
+#HotIf WinActive("ahk_exe wezterm-gui.exe")
+#d::Send("^+{F13}")
+#+d::Send("^+{F14}")
+#w::Send("^+{F15}")
+#t::Send("^+{F16}")
+#+[::Send("^+{F17}")
+#+]::Send("^+{F18}")
+; Font size: Win+= or Win+Shift+= increases; Win+- decreases.
+#=::Send("^+{F19}")
+#+=::Send("^+{F19}")
+#-::Send("^+{F20}")
 #HotIf
 
 ; ============================================
@@ -163,7 +221,7 @@ SwitchWorkspace(name) {
 #+p::return
 #+q::return
 #+r::return
-; #+s - EXCEPTION: keep Snipping Tool screenshot selection
+#+s::Run("ms-screenclip:")  ; EXCEPTION: launch screenshot selection directly
 #+t::return
 #+u::return
 #+v::return
